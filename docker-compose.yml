@@ -1,0 +1,11 @@
+services:
+  mysql:
+    image: mysql:9.4
+    container_name: bookstore-mysql
+    ports:
+      - "3307:3306"
+    environment:
+      MYSQL_ROOT_PASSWORD: rootpassword
+      MYSQL_DATABASE: bookstore
+      MYSQL_USER: bookstore
+      MYSQL_PASSWORD: bookstore123
