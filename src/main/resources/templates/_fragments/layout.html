@@ -1,0 +1,20 @@
+<!DOCTYPE html>
+<html lang="ko" xmlns:th="http://www.thymeleaf.org">
+<head>
+  <meta charset="UTF-8"/>
+  <meta name="viewport" content="width=device-width, initial-scale=1"/>
+  <title th:text="${pageTitle} ?: 'BookStore'">BookStore</title>
+</head>
+<body>
+<header th:replace="_fragments/header :: site-header"></header>
+
+
+<main>
+  <div th:insert="${contentFragment}"></div>
+</main>
+
+
+<footer th:replace="_fragments/footer :: site-footer"></footer>
+<div th:replace="_fragments/modals :: modal-host"></div>
+</body>
+</html>

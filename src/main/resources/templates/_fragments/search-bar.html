@@ -1,0 +1,27 @@
+<!DOCTYPE html>
+<html lang="ko" xmlns:th="http://www.thymeleaf.org">
+<body>
+<section th:fragment="basic(action, keywordName, statusName)">
+  <form th:action="${action}" method="get">
+    <input type="text" th:name="${keywordName}" th:value="${param[keywordName]}" placeholder="검색어"/>
+
+
+    <input type="date" name="from" th:value="${param.from}"/>
+    <input type="date" name="to" th:value="${param.to}"/>
+
+
+    <select th:if="${statusName}" th:name="${statusName}">
+      <option value="">전체</option>
+      <option value="ON_SALE" th:selected="${param[statusName] == 'ON_SALE'}">판매중</option>
+      <option value="OUT_OF_PRINT" th:selected="${param[statusName] == 'OUT_OF_PRINT'}">절판</option>
+      <option value="TEMP_SOLD_OUT" th:selected="${param[statusName] == 'TEMP_SOLD_OUT'}">일시품절</option>
+      <option value="COMING_SOON" th:selected="${param[statusName] == 'COMING_SOON'}">입고예정</option>
+    </select>
+
+
+    <button type="submit">검색</button>
+    <a th:href="${action}">초기화</a>
+  </form>
+</section>
+</body>
+</html>

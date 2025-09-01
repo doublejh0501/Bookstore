@@ -1,0 +1,14 @@
+<!DOCTYPE html>
+<html lang="ko" xmlns:th="http://www.thymeleaf.org">
+<body>
+<footer th:fragment="site-footer">
+    <p>&copy; <span th:text="${#dates.format(#dates.createNow(),'yyyy')}">2025</span> BookStore</p>
+    <nav>
+        <a th:href="@{/about}">About</a>
+        <a th:href="@{/terms}">이용약관</a>
+        <a th:href="@{/privacy}">개인정보처리방침</a>
+        <a th:href="@{/help}">고객센터</a>
+    </nav>
+</footer>
+</body>
+</html>

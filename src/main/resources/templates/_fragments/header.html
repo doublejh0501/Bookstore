@@ -1,0 +1,34 @@
+<!DOCTYPE html>
+<html lang="ko" xmlns:th="http://www.thymeleaf.org">
+<body>
+<header th:fragment="site-header">
+  <nav>
+    <a th:href="@{/}">BookStore</a>
+
+
+    <form th:action="@{/search}" method="get">
+      <input type="search" name="q" placeholder="검색"/>
+      <button type="submit">검색</button>
+    </form>
+
+
+    <ul>
+      <li><a th:href="@{/cart}">장바구니</a></li>
+      <li><a th:href="@{/mypage/orders}">마이페이지</a></li>
+      <li><a th:href="@{/login}" th:if="${#request.remoteUser == null}">로그인</a></li>
+      <li><a th:href="@{/logout}" th:if="${#request.remoteUser != null}">로그아웃</a></li>
+    </ul>
+  </nav>
+
+
+  <nav th:if="${isAdmin}">
+    <ul>
+      <li><a th:href="@{/admin/products}">상품</a></li>
+      <li><a th:href="@{/admin/orders}">주문</a></li>
+      <li><a th:href="@{/admin/members}">회원</a></li>
+      <li><a th:href="@{/admin/inventory}">재고</a></li>
+    </ul>
+  </nav>
+</header>
+</body>
+</html>
