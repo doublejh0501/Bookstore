@@ -1,5 +1,6 @@
 <!DOCTYPE html>
 <html lang="ko" xmlns:th="http://www.thymeleaf.org">
+<meta charset="UTF-8">
 <body>
 <tr th:fragment="emptyRow(colspan, message)">
   <td th:attr="colspan=${colspan}" th:text="${message} ?: '데이터가 없습니다.'"></td>
