@@ -26,25 +26,17 @@ public class Book {
     @Column(nullable = false, length = 200)
     private String title;
 
-    @Column(length = 2000)
     private String description;
 
     @Column(nullable = false, precision = 12, scale = 2)
     private BigDecimal price;
 
-    @Column(nullable = false)
-    private Long isbn;
 
     // Publisher name for search and display
     @Column(length = 120)
     private String publisher;
 
-    // Main image and optional preview binary
     private String imageUrl;
-
-    @Lob
-    @Column(name = "preview")
-    private byte[] preview;
 
     // e.g., "148x210mm", or weight/size encoded as text
     @Column(length = 50)

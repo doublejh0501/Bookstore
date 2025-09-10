@@ -13,7 +13,6 @@ import java.time.LocalDateTime;
 @AllArgsConstructor
 @Builder
 @Entity
-@Table(name = "reviews")
 public class Review {
     @Id
     @GeneratedValue(strategy = GenerationType.IDENTITY)
@@ -27,8 +26,6 @@ public class Review {
     @JoinColumn(name = "book_id", nullable = false)
     private Book book;
 
-    @Column(length = 2000)
-    private String text;
 
     @Column(nullable = false)
     private LocalDateTime createdAt;
