@@ -1,0 +1,179 @@
+분업 가이드: User / Product / Order
+==================================================
+
+목표
+- Wireframe 기준으로 3인 분업 범위·우선순위·산출물을 명확히 정의합니다.
+- 각 파트는 컨트롤러·서비스·리포지토리·템플릿 바인딩·검증·에러 처리까지 책임집니다.
+- 공통 프래그먼트(헤더/푸터/검색/페이징)는 공유하되, Product 파트가 초기 세팅을 리드합니다.
+
+공통 원칙
+- 템플릿 레이아웃: `_fragments/layout.html` 사용(페이지는 본문 fragment만 제공)
+- 모델 키: docs/wireframe의 "Thymeleaf 모델 계약" 준수
+- 페이징/검색바/빈행 안내: `_fragments/pagianation.html`, `_fragments/search-bar.html`, `_fragments/table-empty.html`
+- 검증: 서버단(BindingResult) + 클라이언트단(간단한 HTML5/JS)
+- 파일 업로드(이미지/PDF): 로컬 저장소부터 시작(추후 S3 등 외부 스토리지 추상화)
+- 시큐리티: 로그인 필요 리소스는 인증 가드, 관리자 화면은 ROLE_ADMIN 권한 가정(점진 적용)
+
+의존 관계(상호 영향)
+- Product → Order: 상품/재고/가격 데이터 제공, 재고 차감
+- User → Order: 주문 시 로그인 사용자 정보/배송지/연락처 사용
+- Product → User: 최근 본 책/홈 위젯(베스트셀러, 인기 검색어) 데이터 제공
+
+담당 분배
+1) Product 파트(카탈로그/검색/상세 + 관리자 상품)
+--------------------------------------------------
+담당 화면/라우트(사용자)
+- U-1 홈: `GET /` → `product/home.html`
+- U-2 카테고리: `GET /category/{large}/{medium?}/{small?}` → `product/category-list.html`
+- U-3 검색: `GET /search?q=...` → `product/search-list.html`
+- U-4 상품 상세: `GET /products/{id}` → `product/detail.html`
+
+담당 화면/라우트(관리자)
+- A-1 상품 목록: `GET /admin/products` → `admin/product-list.html`
+- A-2 상품 등록: `GET /admin/products/new`, `POST /admin/products` → `admin/product-form.html`
+- A-3 상품 상세/수정: `GET /admin/products/{id}`, `GET /admin/products/{id}/edit`, `POST/PUT /admin/products/{id}` → `admin/product-detail.html`, `admin/product-form.html`
+- A-8 재고 조회: `GET /admin/inventory` → `admin/inventory-list.html` (선택적으로 Product 담당)
+
+도메인/엔티티
+- `Book`, `Author`, `Category`, `Inventory`, `SaleStatus`, (리뷰 연계: `Review`)
+
+컨트롤러(예시)
+- `ProductController`(사용자 카탈로그)
+- `ProductAdminController`(관리자 상품)
+- `CategoryController`, `SearchController`
+
+서비스/리포지토리(예시)
+- `BookService`, `BookRepository`
+- `CategoryService`, `CategoryRepository`
+- `InventoryService`, `InventoryRepository`
+- `SearchService`(인기 검색어 통계 포함: `SearchKeywordStat` 사용)
+
+주요 기능
+- 목록/상세/검색/정렬/페이징·검색바 바인딩
+- 이미지/미리보기(PDF) 업로드 및 경로 관리
+- 상세설명(Rich Text) 저장, 필드 검증(ISBN/가격/용량/확장자)
+- 홈 위젯(베스트셀러, 인기 검색어, 최근 본 책)
+
+템플릿 모델 키(예)
+- 목록: `page`, `pageSize`, `totalPages`, `items`, `filters`, `sort`
+- 상세: `product`, `images`, `previewPdfUrl`, `reviews`
+
+완료 기준(DOD)
+- 사용자/관리자 전 화면 라우트 + 컨트롤러/서비스/리포지토리 동작
+- 업로드 파일 검증/저장/표시까지 흐름 작동
+- 검색/정렬/페이징 정상 동작, 빈 목록 시 빈행 프래그먼트 노출
+
+
+2) Order 파트(장바구니/결제/주문 + 관리자 주문)
+--------------------------------------------------
+담당 화면/라우트(사용자)
+- U-5 장바구니: `GET /cart` → `user/cart.html` (수량 변경, 선택삭제, 합계)
+- U-6 결제: `GET /checkout`, `POST /checkout` → `user/checkout.html` (주소/수단/약관)
+- U-10 마이 주문 목록: `GET /mypage/orders` → `user/my-orders.html`
+- U-11 마이 주문 상세: `GET /mypage/orders/{id}` → `user/my-order-detail.html` (취소)
+
+담당 화면/라우트(관리자)
+- A-4 주문 목록: `GET /admin/orders` → `admin/order-list.html`
+- A-5 주문 상세/상태변경: `GET /admin/orders/{id}`, `POST /admin/orders/{id}/status` → `admin/order-detail.html`
+
+도메인/엔티티
+- `Cart`, `CartItem`, `Order`, `OrderItem`, `OrderStatus`
+- `Payment`, `PaymentMethod`, `PaymentStatus`
+
+컨트롤러(예시)
+- `CartController`, `CheckoutController`
+- `MyOrderController`
+- `OrderAdminController`
+
+서비스/리포지토리(예시)
+- `CartService`(세션/DB 기반 선택) / `CartRepository`
+- `OrderService` / `OrderRepository`
+- `PaymentService`(모의 PG 연동) / `PaymentRepository`
+- 재고/상품 연동 시 `InventoryService`, `BookService` 활용(트랜잭션 처리)
+
+주요 기능
+- 카트 담기/수정/삭제, 재고/가격 동기화(결제 직전 재확인)
+- 결제요청(모의 PG), 주문 생성, 결제·주문 상태 전이(취소/환불은 후속)
+- 마이 주문 목록/상세 + 취소 플로우
+- 관리자 주문 목록/상세 + 상태 수동변경
+
+템플릿 모델 키(예)
+- 카트: `items`, `totalPrice`
+- 결제: `orderPreview`, `paymentMethods`, `agreement`
+- 주문: `order`, `orderItems`, `payment`, `shipment`
+
+완료 기준(DOD)
+- 카트/결제/주문 전체 흐름 E2E 동작(모의 PG 포함)
+- 주문/결제/재고의 트랜잭션 일관성 보장(취소 시 복구)
+- 관리자 상태변경이 목록/상세/사용자 뷰에 반영
+
+
+3) User 파트(인증/가입/비번재설정 + 관리자 회원)
+--------------------------------------------------
+담당 화면/라우트(사용자)
+- U-7 회원가입: `GET /signup`, `POST /signup` → `auth/signup.html` (ID 중복체크)
+- U-8 로그인/로그아웃: `GET /login`, `POST /login`, `POST /logout` → `auth/login.html`
+- U-9 비밀번호 재설정: `GET/POST /password/forgot`, `GET/POST /password/reset` → `auth/password-*.html`
+- (옵션) 마이프로필/주소지 관리 API(주문에 제공)
+
+담당 화면/라우트(관리자)
+- A-6 회원 목록: `GET /admin/members` → `admin/member-list.html`
+- A-7 회원 상세: `GET /admin/members/{id}` → `admin/member-detail.html`
+
+도메인/엔티티
+- `User`, `Role`, `MemberStatus`, `MemberGrade`, `RecentlyViewed`
+
+컨트롤러(예시)
+- `AuthController`(가입/로그인/로그아웃/비번재설정)
+- `MemberAdminController`(관리자 회원 목록/상세)
+- (옵션) `ProfileController`
+
+서비스/리포지토리(예시)
+- `UserService` / `UserRepository`
+- `AuthService`(암호화/토큰/메일 발송 모의)
+- `RecentlyViewedService`
+
+주요 기능
+- 비밀번호 암호화(`BCryptPasswordEncoder`), 로그인 세션/리멤버미(후속)
+- 아이디/이메일 중복 체크 API, 가입 유효성 검증
+- 비밀번호 초기화 토큰 발급/검증(메일 발송은 로깅/콘솔로 모의)
+- 최근 본 책 저장/조회(홈/상세에 제공)
+
+템플릿 모델 키(예)
+- 가입: `signup`
+- 로그인: `loginForm`, 에러 메시지 바인딩
+- 관리자 회원: `page`, `items`, `filters`
+
+완료 기준(DOD)
+- 가입/로그인/로그아웃/비번재설정 플로우 정상 작동
+- 관리자 회원 목록/상세 조회 + 검색/정렬/페이징 동작
+- 주문 페이지에서 사용자 정보(주소/연락처) 제공 가능
+
+
+공통/가이드라인 및 산출물 체크리스트
+--------------------------------------------------
+- 컨트롤러 계층: 요청 바인딩 DTO, 검증 어노테이션, 에러 시 동일 화면 리턴
+- 서비스 계층: 트랜잭션 경계 정의, 도메인 규칙 캡슐화, 예외 → 의미있는 메시지
+- 리포지토리 계층: 페이징/정렬 지원, 검색 조건 빌더(명세/QueryDSL/JPA Criteria 중 택1)
+- 뷰: `_fragments/layout.html` 적용, 검색바/페이징 프래그먼트 사용, 빈 목록 처리
+- 업로드: 파일 크기/확장자 검증, 저장 경로 구성, URL 노출
+- 시큐리티: 인증 필요 리소스 가드, 관리자 URL 보호(ROLE_ADMIN 가정)
+- 로그/모니터링: 주요 플로우 INFO 로그, 에러 스택트레이스는 서버 로그로만
+- 오류 화면: `error/403.html`, `error/404.html`, `error/500.html` 매핑 유지
+
+마일스톤 제안(2~3 스프린트)
+Sprint 1
+- Product: 사용자 카탈로그(U-1~U-4) MVP + 기본 검색/페이징
+- Order: 장바구니(U-5) MVP + 수량/합계 계산, 주문도메인 스켈레톤
+- User: 가입/로그인(U-7~U-8) MVP + 중복체크 API, 403/404/500 정리
+
+Sprint 2
+- Product: 관리자 상품(A-1~A-3) + 업로드 안정화, 재고 조회(A-8)
+- Order: 결제(U-6) + 주문생성, 마이주문(U-10~U-11), 관리자 주문(A-4~A-5)
+- User: 비번재설정(U-9), 관리자 회원(A-6~A-7), 최근 본 책 연동
+
+Done 조건(최종)
+- 전 화면 라우트 연결, 핵심 플로우(검색→상세→카트→결제→주문) 데모 가능
+- 관리자에서 상품/주문/회원 관리가 최소기능으로 동작
+- 기본 테스트 데이터/시나리오 문서화(README나 docs/data-seed.txt)
+

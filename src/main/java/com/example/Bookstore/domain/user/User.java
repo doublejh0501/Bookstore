@@ -39,10 +39,10 @@ public class User {
     @Column(length = 80)
     private String lastName;
 
-    @ElementCollection(fetch = FetchType.EAGER)
-    @CollectionTable(name = "user_roles", joinColumns = @JoinColumn(name = "user_id"))
-    @Enumerated(EnumType.STRING)
-    @Column(name = "role", length = 30, nullable = false)
+    @ManyToMany(fetch = FetchType.LAZY)
+    @JoinTable(name = "user_role",
+            joinColumns = @JoinColumn(name = "user_id"),
+            inverseJoinColumns = @JoinColumn(name = "role_id"))
     @Builder.Default
     private Set<Role> roles = new HashSet<>();
 
@@ -69,7 +69,6 @@ public class User {
     @PrePersist
     public void prePersist() {
         if (createdAt == null) createdAt = LocalDateTime.now();
-        if (roles == null || roles.isEmpty()) roles = new HashSet<>(Set.of(Role.ROLE_USER));
         if (status == null) status = MemberStatus.ACTIVE;
         if (grade == null) grade = MemberGrade.BASIC;
     }

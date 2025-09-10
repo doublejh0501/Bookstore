@@ -1,0 +1,31 @@
+<!DOCTYPE html>
+<html lang="ko" xmlns:th="http://www.thymeleaf.org"
+      th:replace="_fragments/layout :: layout(~{::section}, '나의 주문')">
+<meta charset="UTF-8">
+<section th:fragment="content">
+  <h1>나의 주문</h1>
+
+  <table>
+    <thead>
+    <tr>
+      <th>주문번호</th>
+      <th>주문일</th>
+      <th>상태</th>
+      <th>금액</th>
+      <th>관리</th>
+    </tr>
+    </thead>
+    <tbody>
+    <tr th:each="o : ${myOrders}">
+      <td th:text="${o.id}">-</td>
+      <td th:text="${#temporals.format(o.createdAt,'yyyy-MM-dd HH:mm')}">-</td>
+      <td th:text="${o.status}">PAID</td>
+      <td th:text="${#numbers.formatInteger(o.totalPrice,3,'COMMA')}">0</td>
+      <td><a th:href="@{|/mypage/orders/${o.id}|}">상세</a></td>
+    </tr>
+    <tr th:if="${#lists.isEmpty(myOrders)}"
+        th:replace="_fragments/table-empty :: emptyRow(5, '주문이 없습니다.')"></tr>
+    </tbody>
+  </table>
+</section>
+</html>

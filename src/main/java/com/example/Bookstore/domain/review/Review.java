@@ -13,9 +13,7 @@ import java.time.LocalDateTime;
 @AllArgsConstructor
 @Builder
 @Entity
-@Table(name = "reviews", uniqueConstraints = {
-        @UniqueConstraint(name = "uk_reviews_user_book", columnNames = {"user_id", "book_id"})
-})
+@Table(name = "reviews")
 public class Review {
     @Id
     @GeneratedValue(strategy = GenerationType.IDENTITY)
@@ -29,11 +27,8 @@ public class Review {
     @JoinColumn(name = "book_id", nullable = false)
     private Book book;
 
-    @Column(nullable = false)
-    private Integer rating; // 1..5
-
-    @Column(columnDefinition = "TEXT")
-    private String content;
+    @Column(length = 2000)
+    private String text;
 
     @Column(nullable = false)
     private LocalDateTime createdAt;
@@ -41,7 +36,5 @@ public class Review {
     @PrePersist
     public void prePersist() {
         if (createdAt == null) createdAt = LocalDateTime.now();
-        if (rating == null) rating = 5;
     }
 }
-

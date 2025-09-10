@@ -1,0 +1,48 @@
+<!DOCTYPE html>
+<html lang="ko" xmlns:th="http://www.thymeleaf.org"
+      th:replace="_fragments/layout :: layout(~{::section}, '장바구니')">
+<meta charset="UTF-8">
+<section th:fragment="content">
+  <h1>장바구니</h1>
+
+  <form method="post" th:action="@{/cart/update}">
+    <table>
+      <thead>
+      <tr>
+        <th><input type="checkbox" id="selectAll" onclick="document.querySelectorAll('.sel').forEach(c=>c.checked=this.checked)"></th>
+        <th>상품</th>
+        <th>단가</th>
+        <th>수량</th>
+        <th>소계</th>
+        <th>삭제</th>
+      </tr>
+      </thead>
+      <tbody>
+      <tr th:each="i : ${items}">
+        <td><input class="sel" type="checkbox" name="selected" th:value="${i.id}" /></td>
+        <td>
+          <a th:href="@{|/products/${i.productId}|}" th:text="${i.productName}">책</a>
+        </td>
+        <td th:text="${#numbers.formatInteger(i.unitPrice,3,'COMMA')}">0</td>
+        <td>
+          <button formaction="/cart/dec" formmethod="post" th:name="${'_id'}" th:value="${i.id}">-</button>
+          <span th:text="${i.quantity}">1</span>
+          <button formaction="/cart/inc" formmethod="post" th:name="${'_id'}" th:value="${i.id}">+</button>
+        </td>
+        <td th:text="${#numbers.formatInteger(i.subtotal,3,'COMMA')}">0</td>
+        <td>
+          <button formaction="/cart/remove" formmethod="post" th:name="${'_id'}" th:value="${i.id}">삭제</button>
+        </td>
+      </tr>
+      <tr th:if="${#lists.isEmpty(items)}"
+          th:replace="_fragments/table-empty :: emptyRow(6, '장바구니가 비어 있습니다.')"></tr>
+      </tbody>
+    </table>
+    <input type="hidden" th:name="${_csrf.parameterName}" th:value="${_csrf.token}" />
+  </form>
+
+  <form th:action="@{/checkout}" method="get">
+    <button type="submit">선택 주문</button>
+  </form>
+</section>
+</html>

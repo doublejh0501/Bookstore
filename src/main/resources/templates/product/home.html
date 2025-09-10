@@ -1,0 +1,33 @@
+<!DOCTYPE html>
+<html lang="ko" xmlns:th="http://www.thymeleaf.org">
+<body th:replace="_fragments/layout :: layout(~{::section}, '홈')">
+<section th:fragment="content">
+  <h1>BookStore</h1>
+
+  <section>
+    <h2>월간 베스트셀러</h2>
+    <ul>
+      <li th:each="b : ${bestSellers}">
+        <a th:href="@{|/products/${b.id}|}" th:text="${b.name}">책 제목</a>
+      </li>
+    </ul>
+  </section>
+
+  <section>
+    <h2>인기 검색어</h2>
+    <ul>
+      <li th:each="k : ${trendingKeywords}" th:text="${k}">검색어</li>
+    </ul>
+  </section>
+
+  <aside>
+    <h3>최근 본 책</h3>
+    <ul>
+      <li th:each="r : ${recentViewed}">
+        <a th:href="@{|/products/${r.productId}|}" th:text="${r.productName}">책</a>
+      </li>
+    </ul>
+  </aside>
+</section>
+</body>
+</html>

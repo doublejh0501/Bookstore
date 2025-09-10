@@ -1,0 +1,36 @@
+<!DOCTYPE html>
+<html lang="ko" xmlns:th="http://www.thymeleaf.org"
+      th:replace="_fragments/layout :: layout(~{::section}, '상품 상세')">
+<meta charset="UTF-8">
+<section th:fragment="content" th:object="${product}">
+  <h1 th:text="*{name}">상품 상세</h1>
+
+  <div>
+    <img th:src="*{thumbnail}" alt="thumb" width="120" height="168"/>
+  </div>
+
+  <dl>
+    <dt>ISBN</dt><dd th:text="*{isbn}">-</dd>
+    <dt>출판사</dt><dd th:text="*{publisher}">-</dd>
+    <dt>저자</dt><dd th:text="*{author}">-</dd>
+    <dt>가격</dt><dd th:text="${#numbers.formatInteger(product.price, 3, 'COMMA')}">0</dd>
+    <dt>재고</dt><dd th:text="*{stock}">0</dd>
+    <dt>판매상태</dt><dd th:text="*{saleStatus}">ON_SALE</dd>
+    <dt>책 크기</dt><dd th:text="*{size}">-</dd>
+    <dt>평점</dt><dd th:text="*{rating}">0</dd>
+    <dt>판매지수</dt><dd th:text="*{saleIndex}">0</dd>
+  </dl>
+
+  <!-- 미리보기는 바이너리로 저장되며 링크 제공 없음 -->
+
+  <article>
+    <h2>상세설명</h2>
+    <div th:utext="*{description}"></div>
+  </article>
+
+  <div style="margin-top:12px;">
+    <a th:href="@{|/admin/products/${product.id}/edit|}">수정</a>
+    <a th:href="@{/admin/products}">목록</a>
+  </div>
+</section>
+</html>

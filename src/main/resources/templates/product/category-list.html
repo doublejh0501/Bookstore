@@ -1,0 +1,32 @@
+<!DOCTYPE html>
+<html lang="ko" xmlns:th="http://www.thymeleaf.org" th:replace="_fragments/layout :: layout(~{::section}, '카테고리')">
+<section th:fragment="content">
+  <h1>카테고리</h1>
+
+  <nav>
+    <span th:each="c, i : ${breadcrumbs}">
+      <a th:href="${c.href}" th:text="${c.name}">카테고리</a>
+      <span th:if="${!i.last}"> &gt; </span>
+    </span>
+  </nav>
+
+  <section>
+    <h2>필터</h2>
+    <form method="get">
+      <input type="text" name="publisher" placeholder="출판사" th:value="${param.publisher}" />
+      <input type="text" name="author" placeholder="저자" th:value="${param.author}" />
+      <input type="number" name="minPrice" placeholder="최소가격" th:value="${param.minPrice}" />
+      <input type="number" name="maxPrice" placeholder="최대가격" th:value="${param.maxPrice}" />
+      <button type="submit">적용</button>
+    </form>
+  </section>
+
+  <ul>
+    <li th:each="p : ${items}">
+      <a th:href="@{|/products/${p.id}|}" th:text="${p.name}">책 제목</a>
+    </li>
+  </ul>
+
+  <div th:replace="_fragments/pagianation :: pager(${page}, ${pageSize}, ${totalPages})"></div>
+</section>
+</html>

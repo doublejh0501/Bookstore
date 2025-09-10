@@ -1,0 +1,24 @@
+<!DOCTYPE html>
+<html lang="ko" xmlns:th="http://www.thymeleaf.org"
+      th:replace="_fragments/layout :: layout(~{::section}, '회원 상세')">
+<meta charset="UTF-8">
+<section th:fragment="content" th:object="${member}">
+  <h1>회원 상세 <small th:text="*{id}"></small></h1>
+
+  <dl>
+    <dt>이름</dt><dd th:text="*{name}">-</dd>
+    <dt>이메일</dt><dd th:text="*{email}">-</dd>
+    <dt>연락처</dt><dd th:text="*{phone}">-</dd>
+    <dt>주소</dt><dd th:text="*{address}">-</dd>
+    <dt>가입일</dt><dd th:text="${#temporals.format(member.joinedAt,'yyyy-MM-dd HH:mm')}">-</dd>
+    <dt>최종접속</dt><dd th:text="${#temporals.format(member.lastLoginAt,'yyyy-MM-dd HH:mm')}">-</dd>
+    <dt>회원등급</dt><dd th:text="*{grade}">-</dd>
+    <dt>상태</dt><dd th:text="*{status}">ACTIVE</dd>
+  </dl>
+
+  <div style="margin-top:12px;">
+    <a th:href="@{|/admin/orders?(memberId=${member.id})|}">주문 내역 보기</a>
+    <a th:href="@{/admin/members}">목록</a>
+  </div>
+</section>
+</html>

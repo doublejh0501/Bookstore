@@ -1,0 +1,26 @@
+<!DOCTYPE html>
+<html lang="ko" xmlns:th="http://www.thymeleaf.org" th:replace="_fragments/layout :: layout(~{::section}, '검색 결과')">
+<section th:fragment="content">
+  <h1>검색 결과</h1>
+
+  <form method="get" th:action="@{/search}">
+    <input type="search" name="q" th:value="${param.q}" placeholder="검색어" />
+    <select name="sort">
+      <option value="relevance" th:selected="${param.sort == 'relevance'}">관련도</option>
+      <option value="sales" th:selected="${param.sort == 'sales'}">판매지수</option>
+      <option value="price" th:selected="${param.sort == 'price'}">가격</option>
+      <option value="createdAt" th:selected="${param.sort == 'createdAt'}">등록일</option>
+    </select>
+    <button type="submit">검색</button>
+  </form>
+
+  <ul>
+    <li th:each="p : ${items}">
+      <a th:href="@{|/products/${p.id}|}" th:text="${p.name}">책 제목</a>
+      <span th:text="${#numbers.formatInteger(p.price, 3, 'COMMA')}"></span>
+    </li>
+  </ul>
+
+  <div th:replace="_fragments/pagianation :: pager(${page}, ${pageSize}, ${totalPages})"></div>
+</section>
+</html>

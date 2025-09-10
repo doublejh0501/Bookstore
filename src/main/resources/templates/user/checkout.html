@@ -1,0 +1,39 @@
+<!DOCTYPE html>
+<html lang="ko" xmlns:th="http://www.thymeleaf.org"
+      th:replace="_fragments/layout :: layout(~{::section}, '주문 결제')">
+<meta charset="UTF-8">
+<section th:fragment="content">
+  <h1>주문 결제</h1>
+
+  <form th:action="@{/checkout}" method="post">
+    <fieldset>
+      <legend>배송지</legend>
+      <input type="text" name="receiver" placeholder="수령인" th:value="${checkout?.receiver}" required />
+      <input type="text" name="address" placeholder="주소" th:value="${checkout?.address}" required />
+      <input type="tel" name="phone" placeholder="연락처" th:value="${checkout?.phone}" />
+    </fieldset>
+
+    <fieldset>
+      <legend>결제수단</legend>
+      <select name="method">
+        <option value="KAKAOPAY">카카오페이</option>
+        <option value="CARD">신용카드</option>
+        <option value="BANK">무통장입금</option>
+      </select>
+    </fieldset>
+
+    <fieldset>
+      <legend>약관동의</legend>
+      <label><input type="checkbox" name="agree" required /> 개인정보 수집/이용 동의</label>
+    </fieldset>
+
+    <section>
+      <h2>주문 요약</h2>
+      <div th:text="${#numbers.formatInteger(totalPrice,3,'COMMA')}">0</div>
+    </section>
+
+    <input type="hidden" th:name="${_csrf.parameterName}" th:value="${_csrf.token}" />
+    <button type="submit">결제 요청</button>
+  </form>
+</section>
+</html>

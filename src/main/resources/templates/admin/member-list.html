@@ -1,0 +1,41 @@
+<!DOCTYPE html>
+<html lang="ko" xmlns:th="http://www.thymeleaf.org"
+      th:replace="_fragments/layout :: layout(~{::section}, '회원 목록')">
+<meta charset="UTF-8">
+<section th:fragment="content">
+  <h1>회원 목록</h1>
+
+  <div th:replace="_fragments/search-bar :: basic(@{/admin/members}, 'q', 'memberStatus')"></div>
+
+  <table>
+    <thead>
+    <tr>
+      <th>회원ID</th>
+      <th>이름</th>
+      <th>이메일</th>
+      <th>연락처</th>
+      <th>회원등급</th>
+      <th>상태</th>
+      <th>가입일</th>
+      <th>관리</th>
+    </tr>
+    </thead>
+    <tbody>
+    <tr th:each="m : ${items}">
+      <td th:text="${m.id}">-</td>
+      <td th:text="${m.name}">-</td>
+      <td th:text="${m.email}">-</td>
+      <td th:text="${m.phone}">-</td>
+      <td th:text="${m.grade}">-</td>
+      <td th:text="${m.status}">ACTIVE</td>
+      <td th:text="${#temporals.format(m.joinedAt,'yyyy-MM-dd')}">-</td>
+      <td><a th:href="@{|/admin/members/${m.id}|}">상세</a></td>
+    </tr>
+    <tr th:if="${#lists.isEmpty(items)}"
+        th:replace="_fragments/table-empty :: emptyRow(8, '회원이 없습니다.')"></tr>
+    </tbody>
+  </table>
+
+  <div th:replace="_fragments/pagianation :: pager(${page}, ${pageSize}, ${totalPages})"></div>
+</section>
+</html>
