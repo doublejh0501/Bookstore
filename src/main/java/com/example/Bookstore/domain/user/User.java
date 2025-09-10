@@ -4,8 +4,7 @@ import jakarta.persistence.*;
 import lombok.*;
 
 import java.time.LocalDateTime;
-import java.util.HashSet;
-import java.util.Set;
+ 
 
 @Getter
 @Setter
@@ -39,12 +38,9 @@ public class User {
     @Column(length = 80)
     private String lastName;
 
-    @ManyToMany(fetch = FetchType.LAZY)
-    @JoinTable(name = "user_role",
-            joinColumns = @JoinColumn(name = "user_id"),
-            inverseJoinColumns = @JoinColumn(name = "role_id"))
-    @Builder.Default
-    private Set<Role> roles = new HashSet<>();
+    @Enumerated(EnumType.STRING)
+    @Column(name = "role", length = 30, nullable = false)
+    private Role role;
 
     // Contact and address info (simplified)
     @Column(length = 30)
@@ -69,6 +65,7 @@ public class User {
     @PrePersist
     public void prePersist() {
         if (createdAt == null) createdAt = LocalDateTime.now();
+        if (role == null) role = Role.ROLE_USER;
         if (status == null) status = MemberStatus.ACTIVE;
         if (grade == null) grade = MemberGrade.BASIC;
     }
