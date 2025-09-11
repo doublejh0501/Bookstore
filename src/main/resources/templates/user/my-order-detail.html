@@ -1,7 +1,6 @@
 <!DOCTYPE html>
 <html lang="ko" xmlns:th="http://www.thymeleaf.org"
       th:replace="_fragments/layout :: layout(~{::section}, '주문 상세')">
-<meta charset="UTF-8">
 <section th:fragment="content" th:object="${order}">
   <h1>주문 상세 <small th:text="*{id}"></small></h1>
 
