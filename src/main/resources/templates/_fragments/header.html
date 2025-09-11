@@ -1,5 +1,5 @@
 <!DOCTYPE html>
-<html lang="ko" xmlns:th="http://www.thymeleaf.org">
+<html lang="ko" xmlns:th="http://www.thymeleaf.org" xmlns:sec="http://www.thymeleaf.org/extras/spring-security">
 <body>
 <header th:fragment="site-header">
   <nav>
@@ -15,8 +15,8 @@
     <ul>
       <li><a th:href="@{/cart}">장바구니</a></li>
       <li><a th:href="@{/mypage/orders}">마이페이지</a></li>
-      <li><a th:href="@{/login}" th:if="${#request.remoteUser == null}">로그인</a></li>
-      <li><a th:href="@{/logout}" th:if="${#request.remoteUser != null}">로그아웃</a></li>
+      <li sec:authorize="isAnonymous()"><a th:href="@{/login}">로그인</a></li>
+      <li sec:authorize="isAuthenticated()"><a th:href="@{/logout}">로그아웃</a></li>
     </ul>
   </nav>
 
