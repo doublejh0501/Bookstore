@@ -23,20 +23,24 @@ public class Book {
     @GeneratedValue(strategy = GenerationType.IDENTITY)
     private Long id;
 
+    @Column(unique = true, nullable = false)
+    private Long isbn;
+
     @Column(nullable = false, length = 200)
     private String title;
 
     private String description;
-
-    @Column(nullable = false, precision = 12, scale = 2)
-    private BigDecimal price;
-
 
     // Publisher name for search and display
     @Column(length = 120)
     private String publisher;
 
     private String imageUrl;
+
+    private String previewUrl;
+
+    @Column(nullable = false, precision = 12, scale = 2)
+    private BigDecimal price;
 
     // e.g., "148x210mm", or weight/size encoded as text
     @Column(length = 50)
@@ -46,14 +50,16 @@ public class Book {
     @Column(precision = 3, scale = 2)
     private BigDecimal rating;
 
-    // Sales index for bestseller rankings
-    private Integer salesIndex;
-
     @Enumerated(EnumType.STRING)
     @Column(length = 20)
     private SaleStatus saleStatus;
 
     private LocalDate publishedDate;
+
+    @Column(nullable = false)
+    private LocalDateTime createdAt;
+
+    private Long viewCnt;
 
     @ManyToOne(fetch = FetchType.LAZY)
     @JoinColumn(name = "category_id")
@@ -62,9 +68,6 @@ public class Book {
     @OneToMany(mappedBy = "book", cascade = CascadeType.ALL, orphanRemoval = true)
     @Builder.Default
     private Set<BookAuthor> bookAuthors = new HashSet<>();
-
-    @Column(nullable = false)
-    private LocalDateTime createdAt;
 
     @PrePersist
     public void prePersist() {
