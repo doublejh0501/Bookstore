@@ -32,19 +32,13 @@ public class User {
     @Column(nullable = false)
     private String password;
 
-    @Column(length = 80)
-    private String firstName;
-
-    @Column(length = 80)
-    private String lastName;
-
     @Enumerated(EnumType.STRING)
     @Column(name = "role", length = 30, nullable = false)
     private Role role;
 
     // Contact and address info (simplified)
     @Column(length = 30)
-    private String phone;
+    private String mobile;
 
     @Column(length = 200)
     private String address;
