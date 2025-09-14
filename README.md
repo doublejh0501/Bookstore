@@ -6,6 +6,7 @@ Order
 김재훈 -> 심다은
 
 깃 정리 
+
   현재 개인 브랜치에서 작업중인 내용 작성완료시 개인 브랜치에 먼저 push함 master에선 ㄴㄴ
   ex)git commit -m"수정한 내용 뭔지 작성(이후 확인용)" -> git push origin (각자 브랜치명)
 
