@@ -1,5 +1,6 @@
 package com.example.Bookstore.domain.book;
 
+import com.example.Bookstore.domain.user.User;
 import jakarta.persistence.*;
 import lombok.*;
 
@@ -9,14 +10,18 @@ import lombok.*;
 @AllArgsConstructor
 @Builder
 @Entity
-@Table(name = "most_search")
-public class MostSearch {
+@Table(name = "recentBook")
+public class RecentBook {
+
     @Id
     @GeneratedValue(strategy = GenerationType.IDENTITY)
     private Long id;
 
     @ManyToOne(fetch = FetchType.LAZY, optional = false)
-    @JoinColumn(name = "book_id", nullable = false)
+    @JoinColumn(name = "book_id")
     private Book book;
-}
 
+    @ManyToOne(fetch = FetchType.LAZY, optional = false)
+    @JoinColumn(name = "user_id")
+    private User user;
+}
