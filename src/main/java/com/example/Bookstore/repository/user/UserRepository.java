@@ -42,8 +42,7 @@ public interface UserRepository extends JpaRepository<User, Long> {
     // 통합 검색(이름/이메일/아이디)
     @Query("""
            select u from User u
-           where lower(u.firstName) like lower(concat('%', :q, '%'))
-              or lower(u.lastName)  like lower(concat('%', :q, '%'))
+           where lower(u.username) like lower(concat('%', :q, '%'))
               or lower(u.email)     like lower(concat('%', :q, '%'))
               or lower(u.username)  like lower(concat('%', :q, '%'))
            """)
