@@ -3,13 +3,16 @@ package com.example.Bookstore.domain.book;
 import jakarta.persistence.*;
 import lombok.*;
 
+import java.util.HashSet;
+import java.util.Set;
+
 @Getter
 @Setter
 @NoArgsConstructor
 @AllArgsConstructor
 @Builder
 @Entity
-@Table(name = "categories", uniqueConstraints = {
+@Table(name = "category", uniqueConstraints = {
         @UniqueConstraint(name = "uk_categories_name", columnNames = {"name"})
 })
 public class Category {
@@ -21,7 +24,6 @@ public class Category {
     private String name;
 
     // Optional self-reference to support hierarchical categories (large/medium/small)
-    @ManyToOne(fetch = FetchType.LAZY)
-    @JoinColumn(name = "parent_id")
-    private Category parent;
+    @OneToMany(mappedBy = "category")
+    private Set<Book> books = new HashSet<>();
 }

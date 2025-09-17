@@ -4,7 +4,6 @@ import com.example.Bookstore.domain.book.Book;
 import jakarta.persistence.*;
 import lombok.*;
 
-import java.math.BigDecimal;
 
 @Getter
 @Setter
@@ -12,13 +11,16 @@ import java.math.BigDecimal;
 @AllArgsConstructor
 @Builder
 @Entity
-@Table(name = "cart_items", uniqueConstraints = {
-        @UniqueConstraint(name = "uk_cart_items_cart_book", columnNames = {"cart_id", "book_id"})
+@Table(name = "cart_item", uniqueConstraints = {
+        @UniqueConstraint(name = "uk_cart_item_cart_id_book_id", columnNames = {"cart_id", "book_id"})
 })
 public class CartItem {
     @Id
     @GeneratedValue(strategy = GenerationType.IDENTITY)
     private Long id;
+
+    @Column(nullable = false)
+    private Long quantity;
 
     @ManyToOne(fetch = FetchType.LAZY, optional = false)
     @JoinColumn(name = "cart_id", nullable = false)
@@ -28,11 +30,5 @@ public class CartItem {
     @JoinColumn(name = "book_id", nullable = false)
     private Book book;
 
-    @Column(nullable = false)
-    private Integer quantity;
-
-    // Snapshot of price at the time item was added
-    @Column(nullable = false, precision = 12, scale = 2)
-    private BigDecimal unitPrice;
 }
 

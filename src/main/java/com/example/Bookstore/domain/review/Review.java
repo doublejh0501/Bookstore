@@ -18,6 +18,9 @@ public class Review {
     @GeneratedValue(strategy = GenerationType.IDENTITY)
     private Long id;
 
+    @Column(nullable = false)
+    private LocalDateTime createdAt;
+
     private String text;
 
     @ManyToOne(fetch = FetchType.LAZY, optional = false)
@@ -27,10 +30,6 @@ public class Review {
     @ManyToOne(fetch = FetchType.LAZY, optional = false)
     @JoinColumn(name = "book_id", nullable = false)
     private Book book;
-
-
-    @Column(nullable = false)
-    private LocalDateTime createdAt;
 
     @PrePersist
     public void prePersist() {

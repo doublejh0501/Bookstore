@@ -9,8 +9,8 @@ import lombok.*;
 @AllArgsConstructor
 @Builder
 @Entity
-@Table(name = "book_authors", uniqueConstraints = {
-        @UniqueConstraint(name = "uk_book_authors_book_author", columnNames = {"book_id", "author_id"})
+@Table(name = "book_author", uniqueConstraints = {
+        @UniqueConstraint(name = "uk_book_author_book_id_author_id", columnNames = {"book_id", "author_id"})
 })
 public class BookAuthor {
     @Id
