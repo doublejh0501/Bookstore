@@ -14,7 +14,6 @@ import java.time.LocalDateTime;
 @Entity
 @Table(name = "users", uniqueConstraints = {
         @UniqueConstraint(name = "uk_users_email", columnNames = {"email"}),
-        @UniqueConstraint(name = "uk_users_username", columnNames = {"username"})
 })
 public class User {
 
@@ -22,9 +21,8 @@ public class User {
     @GeneratedValue(strategy = GenerationType.IDENTITY)
     private Long id;
 
-    // Login/Display ID separate from email (optional but unique if provided)
     @Column(length = 80)
-    private String username;
+    private String name;
 
     @Column(nullable = false, length = 150)
     private String email;

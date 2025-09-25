@@ -25,12 +25,6 @@ public class ViewController {
     @GetMapping("/login")
     public String login() { return "auth/login"; }
 
-    @GetMapping("/signup")
-    public String signup(Model model) {
-        model.addAttribute("signup", new SignupForm());
-        return "auth/signup";
-    }
-
     @GetMapping("/password/forgot")
     public String passwordForgot() { return "auth/password-forgot"; }
 
@@ -146,17 +140,6 @@ public class ViewController {
     public String simplePages() { return "home"; }
 
     // Simple DTOs to satisfy th:object/th:field bindings
-    @Data
-    public static class SignupForm {
-        private String loginId;
-        private String name;
-        private String email;
-        private String phone;
-        private String address;
-        private String password;
-        private String confirmPassword;
-    }
-
     @Data
     public static class ProductForm {
         private Long isbn;

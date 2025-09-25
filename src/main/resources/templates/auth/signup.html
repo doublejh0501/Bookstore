@@ -1,64 +1,93 @@
 <!DOCTYPE html>
 <html lang="ko" xmlns:th="http://www.thymeleaf.org">
-<body>
+<body th:replace="_fragments/layout :: layout(~{::section}, '회원가입')">
 <section th:fragment="content" th:object="${signup}">
   <h1>회원가입</h1>
 
-
-  <form th:action="@{/signup}" method="post">
-    <div>
-      <label for="loginId">아이디</label>
-      <input id="loginId" type="text" th:field="*{loginId}" required />
+  <form th:action="@{/signup}" method="post" novalidate>
+    <div th:if="${#fields.hasGlobalErrors()}" class="form-error" th:each="err : ${#fields.globalErrors()}" th:text="${err}">
+      전역 오류
     </div>
-
 
     <div>
       <label for="name">이름</label>
-      <input id="name" type="text" th:field="*{name}" required />
+      <input id="name" type="text" th:field="*{name}" autocomplete="name" required />
+      <p th:if="${#fields.hasErrors('name')}" th:errors="*{name}">이름 오류</p>
     </div>
-
 
     <div>
       <label for="email">이메일</label>
-      <input id="email" type="email" th:field="*{email}" required />
+      <div>
+        <input id="email" type="email" th:field="*{email}" autocomplete="email" required />
+        <button type="button" id="checkEmailBtn">중복 확인</button>
+      </div>
+      <p th:if="${#fields.hasErrors('email')}" th:errors="*{email}">이메일 오류</p>
+      <p id="emailCheckMessage" class="field-help"></p>
     </div>
-
 
     <div>
-      <label for="phone">연락처</label>
-      <input id="phone" type="tel" th:field="*{phone}" />
+      <label for="contact">연락처</label>
+      <input id="contact" type="tel" th:field="*{contact}" placeholder="예: 010-1234-5678" />
+      <p th:if="${#fields.hasErrors('contact')}" th:errors="*{contact}">연락처 오류</p>
     </div>
-
 
     <div>
       <label for="address">주소</label>
-      <input id="address" type="text" th:field="*{address}" />
+      <input id="address" type="text" th:field="*{address}" autocomplete="street-address" />
+      <p th:if="${#fields.hasErrors('address')}" th:errors="*{address}">주소 오류</p>
     </div>
-
 
     <div>
       <label for="password">비밀번호</label>
-      <input id="password" type="password" th:field="*{password}" required />
+      <input id="password" type="password" th:field="*{password}" autocomplete="new-password" required />
+      <p th:if="${#fields.hasErrors('password')}" th:errors="*{password}">비밀번호 오류</p>
     </div>
-
 
     <div>
       <label for="confirmPassword">비밀번호 확인</label>
-      <input id="confirmPassword" type="password" th:field="*{confirmPassword}" required />
+      <input id="confirmPassword" type="password" th:field="*{confirmPassword}" autocomplete="new-password" required />
+      <p th:if="${#fields.hasErrors('confirmPassword')}" th:errors="*{confirmPassword}">비밀번호 확인 오류</p>
     </div>
 
-
-    <!-- 에러 표시 (간단) -->
-    <div th:if="${#fields.hasErrors()}" th:errors="*{*}">오류가 있습니다.</div>
-
-
-    <button type="submit">가입하기</button>
+    <div>
+      <button type="submit">가입하기</button>
+    </div>
   </form>
 
-
   <div>
-    <a th:href="@{/login}">로그인</a>
+    <a th:href="@{/login}">이미 계정이 있으신가요? 로그인</a>
   </div>
 </section>
+
+<script th:inline="javascript">
+/*<![CDATA[*/
+  const emailInput = document.getElementById('email');
+  const checkButton = document.getElementById('checkEmailBtn');
+  const messageEl = document.getElementById('emailCheckMessage');
+
+  if (checkButton && emailInput && messageEl) {
+    checkButton.addEventListener('click', async () => {
+      const email = emailInput.value.trim();
+      messageEl.textContent = '';
+
+      if (email.length === 0) {
+        messageEl.textContent = '이메일을 입력한 뒤 다시 시도해주세요.';
+        return;
+      }
+
+      try {
+        const response = await fetch(`/signup/check-email?email=${encodeURIComponent(email)}`);
+        if (!response.ok) {
+          throw new Error('중복 확인에 실패했습니다.');
+        }
+        const data = await response.json();
+        messageEl.textContent = data.available ? '사용 가능한 이메일입니다.' : '이미 사용 중인 이메일입니다.';
+      } catch (error) {
+        messageEl.textContent = error.message;
+      }
+    });
+  }
+/*]]>*/
+</script>
 </body>
 </html>
