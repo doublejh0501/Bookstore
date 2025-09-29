@@ -82,4 +82,9 @@ public class BookService {
                 keyword, keyword, keyword, pageable
         );
     }
+
+    public Book getBookById(Long id) {
+        return bookRepository.findById(id)
+                .orElseThrow(() -> new IllegalArgumentException("해당 책을 찾을 수 없습니다. id = " + id));
+    }
 }
