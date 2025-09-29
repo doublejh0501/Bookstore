@@ -225,10 +225,8 @@
             </div>
         </form>
     </div>
-</section>
-
-<script th:inline="javascript">
-    /*<![CDATA[*/
+    <script th:inline="javascript">
+        /*<![CDATA[*/
     const emailInput = document.getElementById('email');
     const checkButton = document.getElementById('checkEmailBtn');
     const messageEl = document.getElementById('emailCheckMessage');
@@ -238,24 +236,26 @@
             const email = emailInput.value.trim();
             messageEl.textContent = '';
 
-            if (email.length === 0) {
-                messageEl.textContent = '이메일을 입력한 뒤 다시 시도해주세요.';
-                return;
-            }
-
-            try {
-                const response = await fetch(`/signup/check-email?email=${encodeURIComponent(email)}`);
-                if (!response.ok) {
-                    throw new Error('중복 확인에 실패했습니다.');
+                if (email.length === 0) {
+                    messageEl.textContent = '이메일을 입력한 뒤 다시 시도해주세요.';
+                    return;
                 }
-                const data = await response.json();
-                messageEl.textContent = data.available ? '사용 가능한 이메일입니다.' : '이미 사용 중인 이메일입니다.';
-            } catch (error) {
-                messageEl.textContent = error.message;
+
+                try {
+                    const response = await fetch(`/signup/check-email?email=${encodeURIComponent(email)}`);
+                    if (!response.ok) {
+                        throw new Error('중복 확인에 실패했습니다.');
+                    }
+                    const data = await response.json();
+                    messageEl.textContent = data.available ? '사용 가능한 이메일입니다.' : '이미 사용 중인 이메일입니다.';
+                } catch (error) {
+                    messageEl.textContent = error.message;
             }
         });
     }
+
     /*]]>*/
-</script>
+    </script>
+</section>
 </body>
 </html>

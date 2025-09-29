@@ -22,7 +22,6 @@ import org.springframework.security.web.SecurityFilterChain; // 최종 보안 �
 import org.springframework.security.web.authentication.UsernamePasswordAuthenticationFilter; // 커스텀 필터 위치 지정
 import org.springframework.security.web.csrf.CookieCsrfTokenRepository; // 쿠키 기반 CSRF 토큰 저장소
 import org.springframework.security.web.csrf.CsrfTokenRequestAttributeHandler; // CSRF 토큰 요청 속성 핸들러
-import org.springframework.security.web.util.matcher.AntPathRequestMatcher; // 패턴 매처
 
 /**
  * 전체 애플리케이션의 보안 규칙과 인증 관련 빈을 구성합니다.
@@ -61,8 +60,8 @@ public class SecurityConfig {
             .requestMatchers(
                 "/", "/login", "/signup", "/signup/**", "/password/**",
                 "/error", "/error/**", "/css/**", "/js/**", "/images/**",
-                "/csrf-token").permitAll()
-            .requestMatchers(new AntPathRequestMatcher("/admin/**")).hasRole("ADMIN")
+                "/csrf-token", "/books/**").permitAll()
+            .requestMatchers("/admin/**").hasRole("ADMIN")
             .anyRequest().authenticated())
         .formLogin(form -> form.disable())
         .httpBasic(httpBasic -> httpBasic.disable())

@@ -12,6 +12,18 @@ spring:
       password: ${REDIS_PASSWORD:} # 필요 시 비밀번호 입력
       database: ${REDIS_DATABASE:0} # 논리적 DB 번호
 
+  mail:
+    host: ${MAILTRAP_HOST:sandbox.smtp.mailtrap.io}
+    port: ${MAILTRAP_PORT:2525}
+    username: ${MAILTRAP_USERNAME:}
+    password: ${MAILTRAP_PASSWORD:}
+    properties:
+      mail:
+        smtp:
+          auth: true
+          starttls:
+            enable: true
+
 
   jpa:
     hibernate:
@@ -27,11 +39,11 @@ server:
 security:
   jwt:
     # 현재 서비스에서 활성화할 키 ID. 환경변수 JWT_ACTIVE_KID 로 덮어쓸 수 있습니다.
-#    active-kid: ${JWT_ACTIVE_KID:primary}
-    active-kid: primary
+    active-kid: ${JWT_ACTIVE_KID:primary}
+#    active-kid: primary
     # kid→secret 쌍을 쉼표로 구분한 문자열 형태로 받습니다. 예) "primary:base64key1,standby:base64key2"
-#    secret-map-raw: ${JWT_SECRET:}
-    secret-map-raw: "primary:U0dGd1NHTndTR04wU0dOMFNHTndTR05B"
+    secret-map-raw: ${JWT_SECRET:}
+#    secret-map-raw: "primary:U0dGd1NHTndTR04wU0dOMFNHTndTR05B"
     access-token:
       # 액세스 토큰 만료 시간을 초 단위로 지정합니다. 기본값은 600초(10분)입니다.
       expiry-seconds: ${JWT_ACCESS_EXPIRY_SECONDS:600}
@@ -62,3 +74,10 @@ security:
       cookie-http-only: ${JWT_REFRESH_COOKIE_HTTP_ONLY:true}
       # SameSite 속성은 CSRF 방지를 위해 Strict 로 설정합니다.
       cookie-same-site: ${JWT_REFRESH_COOKIE_SAME_SITE:Strict}
+
+app:
+  mail:
+    from: ${APP_MAIL_FROM:no-reply@bookstore.local}
+  password-reset:
+    base-url: ${APP_PASSWORD_RESET_BASE_URL:http://localhost:8080/password/reset}
+    token-expiry: ${APP_PASSWORD_RESET_TOKEN_EXPIRY:30m}

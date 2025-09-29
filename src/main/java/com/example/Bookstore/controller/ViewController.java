@@ -22,15 +22,6 @@ public class ViewController {
         return "product/home";
     }
 
-    @GetMapping("/password/forgot")
-    public String passwordForgot() { return "auth/password-forgot"; }
-
-    @GetMapping("/password/reset")
-    public String passwordReset(Model model) {
-        model.addAttribute("token", "demo-token");
-        return "auth/password-reset";
-    }
-
     // Product/User-facing
     @GetMapping("/products/{id}")
     public String productDetail(@PathVariable("id") Long id, Model model) {
