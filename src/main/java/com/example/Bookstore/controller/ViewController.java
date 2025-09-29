@@ -22,9 +22,6 @@ public class ViewController {
         return "product/home";
     }
 
-    @GetMapping("/login")
-    public String login() { return "auth/login"; }
-
     @GetMapping("/password/forgot")
     public String passwordForgot() { return "auth/password-forgot"; }
 

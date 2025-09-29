@@ -126,7 +126,11 @@
         <a th:href="@{/cart}">장바구니</a>
         <a th:href="@{/mypage/orders}">마이페이지</a>
         <a sec:authorize="isAnonymous()" th:href="@{/login}">로그인</a>
-        <a sec:authorize="isAuthenticated()" th:href="@{/logout}">로그아웃</a>
+        <form sec:authorize="isAuthenticated()"
+              th:action="@{/logout}" method="post" class="logout-form">
+          <input type="hidden" th:name="${_csrf.parameterName}" th:value="${_csrf.token}" />
+          <button type="submit" class="logout-button">로그아웃</button>
+        </form>
       </nav>
     </div>
 
@@ -149,6 +153,22 @@
   </div>
 
   <!-- 드롭다운 동작 스크립트 -->
+  <style>
+    .header-links .logout-form { margin:0; display:inline; }
+    .header-links .logout-button {
+      background:none;
+      border:none;
+      padding:0;
+      font:inherit;
+      color:#1f2d3d;
+      font-weight:600;
+      cursor:pointer;
+    }
+    .header-links .logout-button:hover {
+      color:#0046ff;
+    }
+  </style>
+
   <script>
     (function(){
       const root = document.getElementById('fieldSelect');

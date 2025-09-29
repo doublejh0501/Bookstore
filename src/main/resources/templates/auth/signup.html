@@ -1,93 +1,261 @@
 <!DOCTYPE html>
 <html lang="ko" xmlns:th="http://www.thymeleaf.org">
 <body th:replace="_fragments/layout :: layout(~{::section}, '회원가입')">
-<section th:fragment="content" th:object="${signup}">
-  <h1>회원가입</h1>
+<section th:fragment="content" th:object="${signup}" class="auth-section">
+    <style>
+        .auth-section {
+            display: flex;
+            justify-content: center;
+            align-items: flex-start;
+            padding: 72px 16px 96px;
+            background: linear-gradient(150deg, rgba(37, 99, 235, .08), transparent 55%);
+        }
 
-  <form th:action="@{/signup}" method="post" novalidate>
-    <div th:if="${#fields.hasGlobalErrors()}" class="form-error" th:each="err : ${#fields.globalErrors()}" th:text="${err}">
-      전역 오류
+        .signup-card {
+            width: 100%;
+            max-width: 680px;
+            background: #fff;
+            border-radius: 26px;
+            box-shadow: 0 28px 64px rgba(12, 28, 58, .16);
+            padding: 44px 48px 56px;
+            box-sizing: border-box;
+            margin: 0 auto;
+        }
+
+        .signup-headline {
+            margin: 0 0 18px;
+            text-align: center;
+            font-size: 32px;
+            font-weight: 800;
+            color: #101828;
+        }
+
+        .signup-subtext {
+            margin: 0 0 36px;
+            text-align: center;
+            color: #475467;
+            font-size: 15px;
+        }
+
+        .signup-grid {
+            display: flex;
+            flex-direction: column;
+            gap: 24px;
+        }
+
+        .signup-group label {
+            display: block;
+            margin-bottom: 10px;
+            font-size: 14px;
+            font-weight: 600;
+            color: #1f2937;
+        }
+
+        .signup-input {
+            width: 93%;
+            height: 52px;
+            border-radius: 16px;
+            border: 1px solid #d8dde7;
+            background: #f7faff;
+            padding: 0 18px;
+            font-size: 15px;
+            transition: border-color .2s ease, box-shadow .2s ease;
+        }
+
+        .signup-input:focus {
+            outline: none;
+            border-color: #2563eb;
+            box-shadow: 0 0 0 3px rgba(37, 99, 235, .18);
+            background: #fff;
+        }
+
+        .signup-double {
+            display: flex;
+            gap: 12px;
+            align-items: center;
+        }
+
+        .signup-double input.signup-input {
+            flex: 1;
+            min-width: 0;
+        }
+
+        .signup-double button {
+            flex: 0 0 128px;
+            height: 52px;
+            border-radius: 16px;
+            border: none;
+            background: #eef2ff;
+            color: #3730a3;
+            font-weight: 700;
+            cursor: pointer;
+            transition: background .2s ease;
+        }
+
+        .signup-double button:hover {
+            background: #dbeafe;
+        }
+
+        .signup-error {
+            margin-top: 8px;
+            font-size: 13px;
+            color: #e11d48;
+        }
+
+        .signup-help {
+            margin-top: 6px;
+            font-size: 13px;
+            color: #2563eb;
+        }
+
+        .signup-alert {
+            margin-bottom: 28px;
+            padding: 14px 16px;
+            border-radius: 18px;
+            background: rgba(225, 29, 72, .08);
+            color: #be123c;
+            font-size: 14px;
+        }
+
+        .signup-actions {
+            margin-top: 36px;
+            display: flex;
+            flex-direction: column;
+            gap: 14px;
+            align-items: center;
+        }
+
+        .signup-submit {
+            width: 100%;
+            height: 58px;
+            border: none;
+            border-radius: 18px;
+            background: linear-gradient(135deg, #2563eb, #1d4ed8);
+            color: #fff;
+            font-size: 17px;
+            font-weight: 700;
+            cursor: pointer;
+            box-shadow: 0 26px 52px rgba(37, 99, 235, .28);
+            transition: transform .2s ease, box-shadow .2s ease;
+        }
+
+        .signup-submit:hover {
+            transform: translateY(-2px);
+            box-shadow: 0 32px 60px rgba(37, 99, 235, .32);
+        }
+
+        .signup-footer {
+            font-size: 14px;
+            color: #475467;
+        }
+
+        .signup-footer a {
+            color: #1d4ed8;
+            font-weight: 600;
+            text-decoration: none;
+        }
+
+        .signup-footer a:hover {
+            text-decoration: underline;
+        }
+
+        .form-section {
+            margin: 50px;
+        }
+    </style>
+
+    <div class="signup-card">
+        <h1 class="signup-headline">회원가입</h1>
+
+        <div th:if="${#fields.hasGlobalErrors()}" class="signup-alert"
+             th:each="err : ${#fields.globalErrors()}" th:text="${err}"></div>
+
+        <form class="form-section" th:action="@{/signup}" method="post" novalidate>
+            <div class="signup-grid">
+                <div class="signup-group">
+                    <label for="name">이름</label>
+                    <input id="name" class="signup-input" type="text" th:field="*{name}" autocomplete="name" required/>
+                    <p th:if="${#fields.hasErrors('name')}" class="signup-error" th:errors="*{name}"></p>
+                </div>
+
+                <div class="signup-group">
+                    <label for="email">이메일</label>
+                    <div class="signup-double">
+                        <input id="email" class="signup-input" type="email" th:field="*{email}" autocomplete="email"
+                               required/>
+                        <button type="button" id="checkEmailBtn">중복 확인</button>
+                    </div>
+                    <p th:if="${#fields.hasErrors('email')}" class="signup-error" th:errors="*{email}"></p>
+                    <p id="emailCheckMessage" class="signup-help"></p>
+                </div>
+
+                <div class="signup-group">
+                    <label for="contact">연락처</label>
+                    <input id="contact" class="signup-input" type="tel" th:field="*{contact}"
+                           placeholder="예: 010-1234-5678"/>
+                    <p th:if="${#fields.hasErrors('contact')}" class="signup-error" th:errors="*{contact}"></p>
+                </div>
+
+                <div class="signup-group">
+                    <label for="address">주소</label>
+                    <input id="address" class="signup-input" type="text" th:field="*{address}"
+                           autocomplete="street-address"/>
+                    <p th:if="${#fields.hasErrors('address')}" class="signup-error" th:errors="*{address}"></p>
+                </div>
+
+                <div class="signup-group">
+                    <label for="password">비밀번호</label>
+                    <input id="password" class="signup-input" type="password" th:field="*{password}"
+                           autocomplete="new-password" required/>
+                    <p th:if="${#fields.hasErrors('password')}" class="signup-error" th:errors="*{password}"></p>
+                </div>
+
+                <div class="signup-group">
+                    <label for="confirmPassword">비밀번호 확인</label>
+                    <input id="confirmPassword" class="signup-input" type="password" th:field="*{confirmPassword}"
+                           autocomplete="new-password" required/>
+                    <p th:if="${#fields.hasErrors('confirmPassword')}" class="signup-error"
+                       th:errors="*{confirmPassword}"></p>
+                </div>
+            </div>
+
+            <div class="signup-actions">
+                <button type="submit" class="signup-submit">가입 완료</button>
+                <p class="signup-footer">이미 계정이 있으신가요? <a th:href="@{/login}">로그인</a></p>
+            </div>
+        </form>
     </div>
-
-    <div>
-      <label for="name">이름</label>
-      <input id="name" type="text" th:field="*{name}" autocomplete="name" required />
-      <p th:if="${#fields.hasErrors('name')}" th:errors="*{name}">이름 오류</p>
-    </div>
-
-    <div>
-      <label for="email">이메일</label>
-      <div>
-        <input id="email" type="email" th:field="*{email}" autocomplete="email" required />
-        <button type="button" id="checkEmailBtn">중복 확인</button>
-      </div>
-      <p th:if="${#fields.hasErrors('email')}" th:errors="*{email}">이메일 오류</p>
-      <p id="emailCheckMessage" class="field-help"></p>
-    </div>
-
-    <div>
-      <label for="contact">연락처</label>
-      <input id="contact" type="tel" th:field="*{contact}" placeholder="예: 010-1234-5678" />
-      <p th:if="${#fields.hasErrors('contact')}" th:errors="*{contact}">연락처 오류</p>
-    </div>
-
-    <div>
-      <label for="address">주소</label>
-      <input id="address" type="text" th:field="*{address}" autocomplete="street-address" />
-      <p th:if="${#fields.hasErrors('address')}" th:errors="*{address}">주소 오류</p>
-    </div>
-
-    <div>
-      <label for="password">비밀번호</label>
-      <input id="password" type="password" th:field="*{password}" autocomplete="new-password" required />
-      <p th:if="${#fields.hasErrors('password')}" th:errors="*{password}">비밀번호 오류</p>
-    </div>
-
-    <div>
-      <label for="confirmPassword">비밀번호 확인</label>
-      <input id="confirmPassword" type="password" th:field="*{confirmPassword}" autocomplete="new-password" required />
-      <p th:if="${#fields.hasErrors('confirmPassword')}" th:errors="*{confirmPassword}">비밀번호 확인 오류</p>
-    </div>
-
-    <div>
-      <button type="submit">가입하기</button>
-    </div>
-  </form>
-
-  <div>
-    <a th:href="@{/login}">이미 계정이 있으신가요? 로그인</a>
-  </div>
 </section>
 
 <script th:inline="javascript">
-/*<![CDATA[*/
-  const emailInput = document.getElementById('email');
-  const checkButton = document.getElementById('checkEmailBtn');
-  const messageEl = document.getElementById('emailCheckMessage');
+    /*<![CDATA[*/
+    const emailInput = document.getElementById('email');
+    const checkButton = document.getElementById('checkEmailBtn');
+    const messageEl = document.getElementById('emailCheckMessage');
 
-  if (checkButton && emailInput && messageEl) {
-    checkButton.addEventListener('click', async () => {
-      const email = emailInput.value.trim();
-      messageEl.textContent = '';
+    if (checkButton && emailInput && messageEl) {
+        checkButton.addEventListener('click', async () => {
+            const email = emailInput.value.trim();
+            messageEl.textContent = '';
 
-      if (email.length === 0) {
-        messageEl.textContent = '이메일을 입력한 뒤 다시 시도해주세요.';
-        return;
-      }
+            if (email.length === 0) {
+                messageEl.textContent = '이메일을 입력한 뒤 다시 시도해주세요.';
+                return;
+            }
 
-      try {
-        const response = await fetch(`/signup/check-email?email=${encodeURIComponent(email)}`);
-        if (!response.ok) {
-          throw new Error('중복 확인에 실패했습니다.');
-        }
-        const data = await response.json();
-        messageEl.textContent = data.available ? '사용 가능한 이메일입니다.' : '이미 사용 중인 이메일입니다.';
-      } catch (error) {
-        messageEl.textContent = error.message;
-      }
-    });
-  }
-/*]]>*/
+            try {
+                const response = await fetch(`/signup/check-email?email=${encodeURIComponent(email)}`);
+                if (!response.ok) {
+                    throw new Error('중복 확인에 실패했습니다.');
+                }
+                const data = await response.json();
+                messageEl.textContent = data.available ? '사용 가능한 이메일입니다.' : '이미 사용 중인 이메일입니다.';
+            } catch (error) {
+                messageEl.textContent = error.message;
+            }
+        });
+    }
+    /*]]>*/
 </script>
 </body>
 </html>

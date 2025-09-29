@@ -3,7 +3,7 @@ package com.example.Bookstore.service;
 import com.example.Bookstore.domain.book.Book;
 import com.example.Bookstore.repository.book.*;
 import com.example.Bookstore.repository.order.OrderItemRepository;
-import com.example.Bookstore.repository.search.SearchKeywordStatRepository;
+//import com.example.Bookstore.repository.search.SearchKeywordStatRepository;
 import com.example.Bookstore.repository.user.UserRepository;
 import lombok.RequiredArgsConstructor;
 import org.springframework.data.domain.Page;
