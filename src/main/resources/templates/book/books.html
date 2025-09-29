@@ -250,15 +250,13 @@
 
       <ul class="books-grid" th:if="${!#lists.isEmpty(books)}">
         <li class="book-card" th:each="book : ${books}">
+          <a th:href="@{|/books/${book.id}|}" style="text-decoration: none; color: inherit; display: block;">
           <div class="book-image">
             <img th:if="${book.imageUrl != null && !book.imageUrl.isBlank()}" th:src="${book.imageUrl}" th:alt="${book.title}"/>
             <div th:unless="${book.imageUrl != null && !book.imageUrl.isBlank()}" class="book-image--placeholder">이미지 없음</div>
           </div>
 
-          <h3>
-            <a th:href="@{|/books/${book.id}|}" th:text="${book.title}">도서 제목</a>
-          </h3>
-
+          <h3 th:href="@{|/books/${book.id}|}" th:text="${book.title}">도서 제목</h3>
 
           <div class="book-meta">
             <span>
@@ -300,6 +298,7 @@
           <div class="book-price" th:if="${book.price != null}">
             <span th:text="${#numbers.formatInteger(book.price, 0)}">0</span>원
           </div>
+          </a>
 
           <div class="book-actions">
             <button type="button"

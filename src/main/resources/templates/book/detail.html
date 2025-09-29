@@ -1,0 +1,246 @@
+<!DOCTYPE html>
+<html lang="ko" xmlns:th="http://www.thymeleaf.org"
+      th:replace="~{_fragments/layout :: layout(~{::section}, '도서 상세')}" >
+<section th:fragment="content" th:object="${book}" class="book-detail-page">
+  <style>
+    :root {
+      --detail-primary: #2d4bff;
+      --detail-secondary: #4f5aad;
+      --detail-text: #1f2937;
+      --detail-muted: #6b7280;
+      --detail-border: #e5e7eb;
+      --detail-bg: #f6f7fb;
+      --detail-shadow: 0 18px 42px rgba(38, 56, 149, .12);
+    }
+
+    .book-detail-page { background: var(--detail-bg); padding: 36px 0 64px; }
+    .book-detail-container { max-width: 1180px; margin: 0 auto; padding: 0 24px; display: flex; flex-direction: column; gap: 32px; }
+
+    .book-presentation { display: grid; grid-template-columns: 360px 1fr; gap: 32px; background: #fff; border-radius: 26px; box-shadow: var(--detail-shadow); padding: 36px; border: 1px solid rgba(45, 75, 255, 0.08); }
+
+    .book-cover { position: relative; border-radius: 22px; overflow: hidden; background: linear-gradient(145deg, #eef2ff, #dce3ff); display:flex; align-items:center; justify-content:center; min-height: 480px; }
+    .book-cover img { width: 100%; height: 100%; object-fit: contain; background:#fff; }
+    .book-cover__placeholder { font-size: 14px; color: var(--detail-muted); text-align:center; padding:18px; }
+
+    .book-summary { display:flex; flex-direction:column; gap:22px; }
+    .book-badge { width:fit-content; padding:7px 16px 6px; border-radius:999px; font-size:12px; font-weight:700; letter-spacing:0.08em; color:var(--detail-primary); background:rgba(45,75,255,0.12); }
+    .book-title { font-size:32px; font-weight:800; margin:0; line-height:1.28; color:var(--detail-text); }
+    .book-meta { display:flex; flex-wrap:wrap; gap:12px 22px; font-size:14px; color:var(--detail-muted); }
+    .book-meta span strong { margin-right:6px; color:var(--detail-text); font-weight:600; }
+
+    .price-panel { display:flex; justify-content:space-between; align-items:center; gap:18px; padding:18px 22px; background:rgba(45,75,255,0.08); border-radius:20px; font-size:15px; }
+    .price-panel .price { font-size:32px; font-weight:800; color:var(--detail-primary); }
+    .price-panel .stock { color:var(--detail-secondary); }
+
+    .purchase-actions { display:flex; gap:14px; }
+    .purchase-actions form { flex:1; }
+    .purchase-actions button { width:100%; height:54px; border-radius:14px; border:2px solid transparent; box-sizing:border-box; font-size:16px; font-weight:700; cursor:pointer; transition:transform .2s ease, box-shadow .2s ease; }
+    .btn-cart { background:#fff;  border-color:var(--detail-primary); box-shadow:0 0 0 1px rgba(45,75,255,0.12); }
+    .btn-buy { background:var(--detail-primary); color:#fff; border-color:var(--detail-primary);  }
+    .purchase-actions button:hover, .purchase-actions button:focus-visible { transform:translateY(-2px); box-shadow:0 18px 36px rgba(45,75,255,0.18); outline:none; }
+
+    .highlight-cards { display:grid; grid-template-columns:repeat(auto-fit, minmax(220px,1fr)); gap:18px; }
+    .highlight-card { background:#fff; border-radius:18px; padding:18px 20px; border:1px solid var(--detail-border);  display:flex; flex-direction:column; gap:8px; }
+    .highlight-card h4 { margin:0; font-size:15px; color:var(--detail-secondary); font-weight:700; }
+    .highlight-card p { margin:0; font-size:14px; color:var(--detail-muted); line-height:1.6; }
+
+    .detail-sections { background:#fff; border-radius:26px; padding:34px; box-shadow:var(--detail-shadow); border:1px solid rgba(45,75,255,0.06); display:flex; flex-direction:column; gap:32px; }
+
+    .detail-tabs { display:flex; gap:12px; border-bottom:1px solid var(--detail-border); padding-bottom:12px; overflow-x:auto; }
+    .detail-tab { padding:10px 18px; border-radius:999px; border:1px solid transparent; background:transparent; font-size:14px; font-weight:600; color:var(--detail-muted); cursor:pointer; transition:all .2s ease; }
+    .detail-tab.is-active { background:rgba(45,75,255,0.14); color:var(--detail-primary); border-color:rgba(45,75,255,0.32); }
+
+    .book-description h3 { font-size:20px; font-weight:700; margin:0 0 18px; }
+    .book-description .description-body { font-size:15px; line-height:1.8; color:var(--detail-text); }
+
+    .spec-table { border-radius:20px; border:1px solid var(--detail-border); overflow:hidden; }
+    .spec-table table { width:100%; border-collapse:collapse; font-size:14px; }
+    .spec-table th, .spec-table td { padding:14px 18px; border-bottom:1px solid var(--detail-border); }
+    .spec-table th { width:150px; background:rgba(243,244,246,.66); color:var(--detail-secondary); font-weight:600; text-align:left; }
+
+    .review-section { display:flex; flex-direction:column; gap:20px; }
+    .review-summary { display:flex; align-items:center; gap:24px; }
+    .review-score { font-size:36px; font-weight:800; color:var(--detail-primary); }
+    .review-score span { font-size:16px; color:var(--detail-muted); margin-left:6px; }
+    .review-count { font-size:14px; color:var(--detail-muted); }
+    .review-list { display:flex; flex-direction:column; gap:16px; }
+    .review-card { background:#fff; border-radius:16px; border:1px solid var(--detail-border); padding:18px 20px; box-shadow:0 10px 24px rgba(17,24,39,0.06); }
+    .review-card strong { display:block; font-size:14px; color:var(--detail-secondary); margin-bottom:6px; }
+    .review-card p { margin:0; font-size:14px; line-height:1.6; color:var(--detail-text); }
+
+    .review-form { display:flex; flex-direction:column; gap:12px; border:1px dashed rgba(45,75,255,0.32); border-radius:16px; padding:18px; background:rgba(45,75,255,0.06); }
+    .review-form textarea { min-height:120px; border-radius:12px; border:1px solid rgba(45,75,255,0.25); padding:12px 14px; font-size:14px; font-family:inherit; }
+    .review-form button { align-self:flex-end; background:var(--detail-primary); color:#fff; border:none; border-radius:12px; padding:10px 22px; font-size:14px; font-weight:600; cursor:pointer; box-shadow:0 12px 24px rgba(45,75,255,0.2); }
+
+    .empty-state { border:1px dashed rgba(45,75,255,0.24); border-radius:18px; padding:22px; text-align:center; font-size:14px; color:var(--detail-muted); background:rgba(45,75,255,0.06); }
+
+    @media (max-width: 1024px) {
+      .book-presentation { grid-template-columns:1fr; }
+      .book-cover { min-height:360px; }
+    }
+    @media (max-width: 640px) {
+      .book-detail-container { padding:0 16px; }
+      .book-presentation { padding:26px; }
+      .book-title { font-size:26px; }
+      .purchase-actions { flex-direction:column; }
+      .price-panel { flex-direction:column; align-items:flex-start; }
+    }
+  </style>
+
+  <div class="book-detail-container">
+    <div class="book-presentation"
+         th:with="cover=${book instanceof T(java.util.Map)
+                        ? (!#strings.isEmpty(book['imageUrl']) ? book['imageUrl'] :
+                           (!#strings.isEmpty(book['image']) ? book['image'] :
+                           (!#strings.isEmpty(book['thumbnail']) ? book['thumbnail'] :
+                           (!#strings.isEmpty(book['coverUrl']) ? book['coverUrl'] : null))))
+                        : (!#strings.isEmpty(book.imageUrl) ? book.imageUrl :
+                           (!#strings.isEmpty(book.previewUrl) ? book.previewUrl : null))}">
+      <div class="book-cover">
+        <img th:if="${cover != null}" th:src="${cover}" th:alt="*{title}"/>
+        <div class="book-cover__placeholder" th:unless="${cover != null}">이미지를 준비 중입니다.</div>
+      </div>
+
+      <div class="book-summary">
+        <span class="book-badge" th:text="${book.saleStatus != null ? book.saleStatus : 'BEST'}">BEST</span>
+        <h1 class="book-title" th:text="*{title}">도서명</h1>
+        <div class="book-meta">
+          <span>
+            <strong>저자</strong>
+            <span th:if="${book.bookAuthors != null and !book.bookAuthors.isEmpty()}">
+              <span th:each="ba, stat : ${book.bookAuthors}">
+                <span th:text="${ba.author != null ? ba.author.name : '알 수 없음'}"></span><span th:if="${!stat.last}">, </span>
+              </span>
+            </span>
+            <span th:unless="${book.bookAuthors != null and !book.bookAuthors.isEmpty()}">미상</span>
+          </span>
+          <span><strong>출판사</strong><span th:text="${book.publisher != null ? book.publisher : '출판사'}">출판사</span></span>
+          <span th:if="${book.publishedDate != null}"><strong>출간일</strong><span th:text="${#temporals.format(book.publishedDate, 'yyyy.MM.dd')}">2024.01.01</span></span>
+          <span><strong>ISBN</strong><span th:text="${book.isbn}">978-0000000000</span></span>
+        </div>
+
+        <div class="price-panel">
+          <div>
+            <div class="price"><span th:text="${#numbers.formatInteger(book.price, 3, 'COMMA')}">15,000</span>원</div>
+            <div class="stock" th:text="${book.inventory != null ? '현재 재고 ' + book.inventory.quantity + '권' : '재고 확인 중'}">재고</div>
+          </div>
+          <div>
+            <div>평점 <strong th:text="${book.rating != null ? book.rating : '0.0'}">4.5</strong></div>
+            <div>판매지수 <strong th:text="${book.viewCnt != null ? book.viewCnt : 0}">1,234</strong></div>
+          </div>
+        </div>
+
+        <div class="purchase-actions">
+          <form th:action="@{/cart}" method="post">
+            <input type="hidden" name="bookId" th:value="*{id}" />
+            <input type="hidden" name="qty" value="1" />
+            <input type="hidden" th:if="${_csrf != null}" th:name="${_csrf.parameterName}" th:value="${_csrf.token}" />
+            <button type="submit" class="btn-cart">장바구니 담기</button>
+          </form>
+          <form th:action="@{/checkout}" method="post">
+            <input type="hidden" name="bookId" th:value="*{id}" />
+            <input type="hidden" name="qty" value="1" />
+            <input type="hidden" th:if="${_csrf != null}" th:name="${_csrf.parameterName}" th:value="${_csrf.token}" />
+            <button type="submit" class="btn-buy">바로 구매</button>
+          </form>
+        </div>
+
+        <div class="highlight-cards">
+          <article class="highlight-card">
+            <h4>배송 안내</h4>
+            <p>오늘 주문 시 빠르면 내일 받아볼 수 있어요. 지역 및 재고 상황에 따라 달라질 수 있습니다.</p>
+          </article>
+          <article class="highlight-card">
+            <h4>회원 혜택</h4>
+            <p>BookStore 멤버십 고객은 구매 금액의 최대 5%를 포인트로 적립 받을 수 있습니다.</p>
+          </article>
+          <article class="highlight-card">
+            <h4>상품 상태</h4>
+            <p th:text="${book.saleStatus != null ? book.saleStatus : '판매 중'}">판매 중</p>
+          </article>
+        </div>
+      </div>
+    </div>
+
+    <div class="detail-sections">
+      <div class="detail-tabs">
+        <button class="detail-tab is-active" type="button">상품 정보</button>
+        <button class="detail-tab" type="button">리뷰</button>
+      </div>
+
+      <section class="book-description">
+        <h3>책 소개</h3>
+        <div class="description-body" th:utext="*{description}">
+          <p>책 소개가 준비 중입니다.</p>
+        </div>
+      </section>
+
+      <section class="spec-table">
+        <table>
+          <tbody>
+          <tr>
+            <th>도서명</th>
+            <td th:text="*{title}">도서명</td>
+          </tr>
+          <tr>
+            <th>저자</th>
+            <td>
+              <span th:if="${book.bookAuthors != null and !book.bookAuthors.isEmpty()}">
+                <span th:each="ba, stat : ${book.bookAuthors}">
+                  <span th:text="${ba.author != null ? ba.author.name : '알 수 없음'}"></span><span th:if="${!stat.last}">, </span>
+                </span>
+              </span>
+              <span th:unless="${book.bookAuthors != null and !book.bookAuthors.isEmpty()}">미상</span>
+            </td>
+          </tr>
+          <tr>
+            <th>출판사</th>
+            <td th:text="${book.publisher != null ? book.publisher : '출판사'}">출판사</td>
+          </tr>
+          <tr>
+            <th>ISBN</th>
+            <td th:text="${book.isbn}">978-0000000000</td>
+          </tr>
+          <tr th:if="${book.size != null}">
+            <th>규격</th>
+            <td th:text="${book.size}">148x210mm</td>
+          </tr>
+          <tr th:if="${book.publishedDate != null}">
+            <th>출간일</th>
+            <td th:text="${#temporals.format(book.publishedDate, 'yyyy.MM.dd')}">2024.01.01</td>
+          </tr>
+          </tbody>
+        </table>
+      </section>
+
+      <section class="review-section" id="reviews">
+        <h3>회원 리뷰</h3>
+        <div class="review-summary">
+          <div class="review-score">
+            <span th:text="${book.rating != null ? book.rating : '0.0'}">4.5</span>
+            <span>/ 5</span>
+          </div>
+          <div class="review-count" th:text="${reviews != null ? reviews.size() + '개의 리뷰' : '아직 리뷰가 없습니다'}">3개의 리뷰</div>
+        </div>
+
+        <div class="review-list" th:if="${reviews != null && !reviews.isEmpty()}">
+          <article class="review-card" th:each="r : ${reviews}">
+            <strong th:text="${r.author}">작성자</strong>
+            <p th:text="${r.text}">리뷰 내용</p>
+          </article>
+        </div>
+        <div class="empty-state" th:if="${reviews == null || reviews.isEmpty()}">
+          아직 등록된 리뷰가 없습니다. 첫 번째 리뷰를 남겨보세요!
+        </div>
+
+        <form class="review-form" th:action="@{|/books/${book.id}/reviews|}" method="post">
+          <label for="reviewText">리뷰 작성</label>
+          <textarea id="reviewText" name="text" placeholder="이 책에 대한 생각을 자유롭게 남겨주세요."></textarea>
+          <input type="hidden" th:if="${_csrf != null}" th:name="${_csrf.parameterName}" th:value="${_csrf.token}" />
+          <button type="submit">리뷰 등록</button>
+        </form>
+      </section>
+    </div>
+  </div>
+</section>
+</html>
