@@ -1,0 +1,345 @@
+<!DOCTYPE html>
+<html lang="ko" xmlns:th="http://www.thymeleaf.org"
+      th:replace="_fragments/layout :: layout(~{::section}, '도서 목록')">
+<section class="books-page" th:fragment="content">
+  <style>
+    :root {
+      --primary-color: #0046ff;
+      --secondary-color: #223b78;
+      --border-color: #e5e8eb;
+      --bg-muted: #f6f8fb;
+      --text-muted: #64748b;
+      --text-strong: #1f2d3d;
+    }
+
+    .books-page {
+      display: block;
+      margin-top: 0;
+      padding: 16px 0 40px;
+      background: var(--bg-muted);
+      min-height: 100vh;
+      font-family: "Noto Sans KR", Arial, sans-serif;
+    }
+
+    .books-container {
+      max-width: 1200px;
+      margin: 0 auto;
+      padding: 0 24px;
+    }
+
+    .books-header {
+      margin-bottom: 20px;
+    }
+    .books-header h1 { font-size: 28px; font-weight: 700; margin: 0 0 8px; color: var(--text-strong); }
+    .books-header p  { margin: 0; font-size: 14px; color: var(--text-muted); }
+
+    /* ✅ 카드 3열 & 간격 넓힘 */
+    .books-grid {
+      display: grid;
+      grid-template-columns: repeat(3, 260px);
+      justify-content: center;
+      gap: 100px; /* 카드 간격 넓힘 */
+      list-style: none;
+      margin: 0;
+      padding: 0;
+    }
+
+    .book-card {
+      background: #fff;
+      border: 1px solid var(--border-color);
+      border-radius: 12px;
+      box-shadow: 0 6px 18px rgba(15, 30, 65, 0.08);
+      padding: 16px;
+      display: flex;
+      flex-direction: column;
+      gap: 12px;
+      transition: transform 0.2s ease, box-shadow 0.2s ease;
+      width: 100%;
+      max-width: 260px;
+    }
+    .book-card:hover {
+      transform: translateY(-3px);
+      box-shadow: 0 12px 30px rgba(15, 30, 65, 0.15);
+    }
+
+    /* ✅ 이미지 크기 통일 + 배경 제거 */
+    .book-image {
+      width: 100%;
+      height: 340px; /* ✅ 모든 이미지 동일한 높이 */
+      border-radius: 8px;
+      overflow: hidden;
+      background: none; /* ✅ 회색 배경 제거 */
+      display: flex;
+      align-items: center;
+      justify-content: center;
+    }
+
+    .book-image img {
+      width: 100%;
+      height: 100%;
+      object-fit: contain; /* ✅ 비율 유지하면서 안 잘리게 */
+      background: white;   /* ✅ 흰색 배경 통일감 */
+      display: block;
+    }
+
+    .book-image--placeholder {
+      color: var(--text-muted);
+      font-size: 13px;
+      width: 100%;
+      height: 100%;
+      display: flex;
+      align-items: center;
+      justify-content: center;
+      border: 1px dashed var(--border-color);
+    }
+
+    .book-card h3 {
+      margin: 0;
+      font-size: 17px;
+      font-weight: 700;
+      color: var(--text-strong);
+      line-height: 1.4;
+    }
+    .book-card h3 a {
+      color: inherit;
+      text-decoration: none;
+    }
+    .book-card h3 a:hover {
+      color: var(--primary-color);
+    }
+
+    .book-meta {
+      display: flex;
+      flex-direction: column;
+      gap: 6px;
+      font-size: 13px;
+      color: var(--text-muted);
+    }
+    .book-meta .book-highlight {
+      font-weight: 700;
+      color: var(--text-strong);
+    }
+
+    .book-price {
+      margin-top: auto;
+      font-size: 15px;
+      font-weight: 700;
+      color: var(--secondary-color);
+    }
+
+    .book-actions {
+      display: flex;
+      gap: 8px;
+      margin-top: 12px;
+    }
+    .book-button {
+      flex: 1;
+      display: inline-flex;
+      align-items: center;
+      justify-content: center;
+      height: 40px;
+      border-radius: 8px;
+      border: 1px solid var(--primary-color);
+      font-size: 14px;
+      font-weight: 600;
+      text-decoration: none;
+      color: var(--primary-color);
+      background: transparent;
+      cursor: pointer;
+      transition: background-color .2s ease, color .2s ease, box-shadow .2s ease;
+    }
+    .book-button:hover,
+    .book-button:focus-visible {
+      background: rgba(0,70,255,0.08);
+      outline: none;
+      box-shadow: 0 4px 12px rgba(0,70,255,0.15);
+    }
+    .book-button[disabled] {
+      cursor: not-allowed;
+      opacity: 0.6;
+      box-shadow: none;
+    }
+    .book-button--primary {
+      background: var(--primary-color);
+      color: #fff;
+    }
+    .book-button--primary:hover,
+    .book-button--primary:focus-visible {
+      background: #133efb;
+      color: #fff;
+    }
+
+    .books-empty {
+      padding: 48px;
+      background: #fff;
+      border: 1px dashed var(--border-color);
+      border-radius: 12px;
+      text-align: center;
+      color: var(--text-muted);
+      font-size: 15px;
+    }
+
+    .pagination {
+      display: flex;
+      justify-content: center;
+      gap: 8px;
+      margin-top: 20px;
+    }
+    .pagination li { list-style: none; }
+    .pagination a, .pagination span {
+      display: inline-flex;
+      align-items: center;
+      justify-content: center;
+      width: 32px;
+      height: 32px;
+      border-radius: 50%;
+      border: 1px solid var(--border-color);
+      text-decoration: none;
+      font-size: 14px;
+      color: var(--text-muted);
+      transition: all 0.2s ease;
+    }
+    .pagination a:hover {
+      border-color: var(--primary-color);
+      color: var(--primary-color);
+    }
+    .pagination li.active span {
+      background: var(--primary-color);
+      color: #fff;
+      border-color: var(--primary-color);
+      font-weight: 700;
+    }
+
+
+
+    .category-nav__item a {
+      display: inline-block;
+      padding: 10px 16px;
+      border: 1px solid var(--border-color);
+      border-radius: 9999px;              /* pill 형태 */
+      color: var(--text-strong);
+      text-decoration: none;
+      font-size: 14px;
+      transition: all .15s ease;
+    }
+    .category-nav__item a:hover {
+      border-color: var(--primary-color);
+      color: var(--primary-color);
+    }
+    .category-nav__item.active a {
+      background: var(--primary-color);
+      color: #fff;
+      border-color: var(--primary-color);
+      font-weight: 700;
+    }
+  </style>
+
+  <div class="books-container">
+    <header class="books-header">
+      <h1>도서 목록</h1>
+      <p th:if="${keyword}">
+        검색어 "<span th:text="${keyword}">키워드</span>"에 대한 결과입니다.
+      </p>
+    </header>
+    <p class="books-count" th:text="'총 ' + ${page.totalElements} + '권을 찾았습니다.'">총 0권을 찾았습니다.</p>
+
+    <div class="books-content">
+      <div class="books-empty" th:if="${#lists.isEmpty(books)}">
+        표시할 도서가 없습니다.
+      </div>
+
+      <ul class="books-grid" th:if="${!#lists.isEmpty(books)}">
+        <li class="book-card" th:each="book : ${books}">
+          <div class="book-image">
+            <img th:if="${book.imageUrl != null && !book.imageUrl.isBlank()}" th:src="${book.imageUrl}" th:alt="${book.title}"/>
+            <div th:unless="${book.imageUrl != null && !book.imageUrl.isBlank()}" class="book-image--placeholder">이미지 없음</div>
+          </div>
+
+          <h3>
+            <a th:href="@{|/books/${book.id}|}" th:text="${book.title}">도서 제목</a>
+          </h3>
+
+
+          <div class="book-meta">
+            <span>
+              <span class="book-highlight">카테고리</span>
+              <span th:text="${book.category != null ? book.category.name : '미분류'}">카테고리명</span>
+            </span>
+
+            <span>
+              <span class="book-highlight">저자</span>
+              <span th:if="${book.bookAuthors == null || book.bookAuthors.isEmpty()}">정보 없음</span>
+              <span th:if="${book.bookAuthors != null && !book.bookAuthors.isEmpty()}">
+                <span th:each="bookAuthor, iterStat : ${book.bookAuthors}">
+                  <span th:text="${bookAuthor.author != null ? bookAuthor.author.name : '알 수 없음'}">저자명</span><span th:if="${!iterStat.last}">, </span>
+                </span>
+              </span>
+            </span>
+
+            <span>
+              <span class="book-highlight">출판사</span>
+              <span th:text="${book.publisher}">출판사</span>
+            </span>
+
+            <span>
+              <span class="book-highlight">출간일</span>
+              <span th:text="${#temporals.format(book.publishedDate, 'yyyy-MM-dd')}">2024-01-01</span>
+            </span>
+
+            <span th:if="${book.rating != null}">
+              <span class="book-highlight">평점</span>
+              <span th:text="${book.rating}">0.0</span>
+            </span>
+
+            <span th:if="${book.viewCnt != null}">
+              <span class="book-highlight">조회수</span>
+              <span th:text="${book.viewCnt}">0</span>
+            </span>
+          </div>
+
+          <div class="book-price" th:if="${book.price != null}">
+            <span th:text="${#numbers.formatInteger(book.price, 0)}">0</span>원
+          </div>
+
+          <div class="book-actions">
+            <button type="button"
+                    class="book-button"
+                    th:attr="data-book-id=${book.id}"
+                    th:if="${book.id != null}">장바구니에 담기</button>
+            <button type="button" class="book-button" disabled th:unless="${book.id != null}">장바구니에 담기</button>
+
+            <button type="button"
+                    class="book-button book-button--primary"
+                    th:attr="data-book-id=${book.id}"
+                    th:if="${book.id != null}">바로구매</button>
+            <button type="button" class="book-button book-button--primary" disabled th:unless="${book.id != null}">바로구매</button>
+          </div>
+        </li>
+      </ul>
+
+      <nav class="pagination" th:if="${page.totalPages > 1}">
+        <ul>
+          <li>
+            <a th:if="${page.hasPrevious()}"
+               th:href="@{/books(page=${page.number - 1}, size=${page.size}, categoryId=${categoryId}, keyword=${keyword}, field=${field})}">《</a>
+            <span th:unless="${page.hasPrevious()}">《</span>
+          </li>
+
+          <li th:each="p : ${#numbers.sequence(0, page.totalPages - 1)}" th:classappend="${p == page.number} ? 'active'">
+            <a th:if="${p != page.number}"
+               th:href="@{/books(page=${p}, size=${page.size}, categoryId=${categoryId}, keyword=${keyword}, field=${field})}"
+               th:text="${p + 1}">1</a>
+            <span th:if="${p == page.number}" th:text="${p + 1}">1</span>
+          </li>
+
+          <li>
+            <a th:if="${page.hasNext()}"
+               th:href="@{/books(page=${page.number + 1}, size=${page.size}, categoryId=${categoryId}, keyword=${keyword}, field=${field})}">》</a>
+            <span th:unless="${page.hasNext()}">》</span>
+          </li>
+        </ul>
+      </nav>
+    </div>
+  </div>
+</section>
+</html>
