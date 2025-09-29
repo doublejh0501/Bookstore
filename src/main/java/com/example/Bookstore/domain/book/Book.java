@@ -60,6 +60,7 @@ public class Book {
     @Column(length = 20)
     private SaleStatus saleStatus;
 
+    @Column(nullable = false)
     private LocalDate publishedDate;
 
     @Column(nullable = false)

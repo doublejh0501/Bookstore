@@ -1,14 +1,177 @@
 <!DOCTYPE html>
 <html lang="ko" xmlns:th="http://www.thymeleaf.org">
 <body>
-<footer th:fragment="site-footer">
-    <p>&copy; <span th:text="${#dates.format(#dates.createNow(),'yyyy')}">2025</span> BookStore</p>
-    <nav>
-        <a th:href="@{/about}">About</a>
-        <a th:href="@{/terms}">이용약관</a>
-        <a th:href="@{/privacy}">개인정보처리방침</a>
-        <a th:href="@{/help}">고객센터</a>
-    </nav>
+<footer th:fragment="site-footer" style="font-family: 'Noto Sans KR', Arial, sans-serif;">
+  <style>
+    .site-footer {
+      background: linear-gradient(180deg, #0f1b45 0%, #121c3a 40%, #0c132c 100%);
+      color: rgba(255, 255, 255, 0.8);
+      padding: 48px 0 32px;
+    }
+
+    .footer-inner {
+      max-width: 1200px;
+      margin: 0 auto;
+      padding: 0 24px;
+      display: grid;
+      grid-template-columns: repeat(auto-fit, minmax(220px, 1fr));
+      gap: 32px;
+    }
+
+    .footer-brand h2 {
+      margin: 0 0 12px;
+      font-size: 26px;
+      font-weight: 800;
+      letter-spacing: 0.5px;
+      color: #7ad6ff;
+    }
+
+    .footer-brand p {
+      margin: 0;
+      line-height: 1.6;
+      font-size: 14px;
+    }
+
+    .footer-links h3 {
+      margin: 0 0 16px;
+      font-size: 16px;
+      font-weight: 700;
+      color: rgba(255, 255, 255, 0.95);
+    }
+
+    .footer-links ul {
+      list-style: none;
+      margin: 0;
+      padding: 0;
+      display: grid;
+      gap: 10px;
+    }
+
+    .footer-links a {
+      text-decoration: none;
+      color: inherit;
+      font-size: 14px;
+      transition: color 0.2s ease;
+    }
+
+    .footer-links a:hover {
+      color: #7ad6ff;
+    }
+
+    .footer-contact {
+      background: rgba(12, 26, 55, 0.45);
+      padding: 24px;
+      border-radius: 16px;
+      border: 1px solid rgba(122, 214, 255, 0.2);
+    }
+
+    .footer-contact strong {
+      display: block;
+      font-size: 16px;
+      margin-bottom: 12px;
+      color: rgba(255, 255, 255, 0.95);
+    }
+
+    .footer-contact p {
+      margin: 0;
+      font-size: 14px;
+      line-height: 1.6;
+    }
+
+    .footer-bottom {
+      max-width: 1200px;
+      margin: 32px auto 0;
+      padding: 20px 24px 0;
+      border-top: 1px solid rgba(122, 214, 255, 0.18);
+      display: flex;
+      flex-direction: column;
+      gap: 12px;
+      text-align: center;
+      font-size: 13px;
+      color: rgba(255, 255, 255, 0.6);
+    }
+
+    .footer-bottom nav {
+      display: flex;
+      gap: 18px;
+      justify-content: center;
+      flex-wrap: wrap;
+    }
+
+    .footer-bottom a {
+      text-decoration: none;
+      color: rgba(255, 255, 255, 0.7);
+      font-weight: 600;
+      transition: color 0.2s ease;
+    }
+
+    .footer-bottom a:hover {
+      color: #7ad6ff;
+    }
+
+    @media (max-width: 768px) {
+      .site-footer {
+        padding: 40px 0 28px;
+      }
+
+      .footer-inner {
+        grid-template-columns: 1fr;
+        gap: 24px;
+      }
+
+      .footer-contact {
+        padding: 20px;
+      }
+    }
+  </style>
+
+  <div class="site-footer">
+    <div class="footer-inner">
+      <section class="footer-brand">
+        <h2>BookStore</h2>
+        <p>
+          독자를 위한 특별한 책의 공간,<br/>
+          BookStore에서 매일 새로운 이야기를 만나보세요.
+        </p>
+      </section>
+
+      <section class="footer-links">
+        <h3>고객 지원</h3>
+        <ul>
+          <li><a th:href="@{/help}">고객센터</a></li>
+          <li><a th:href="@{/faq}">자주 묻는 질문</a></li>
+          <li><a th:href="@{/shipping}">배송 안내</a></li>
+          <li><a th:href="@{/return}">반품/교환 안내</a></li>
+        </ul>
+      </section>
+
+      <section class="footer-links">
+        <h3>BookStore 소개</h3>
+        <ul>
+          <li><a th:href="@{/about}">회사 소개</a></li>
+          <li><a th:href="@{/terms}">이용약관</a></li>
+          <li><a th:href="@{/privacy}">개인정보처리방침</a></li>
+          <li><a th:href="@{/partnership}">제휴 문의</a></li>
+        </ul>
+      </section>
+
+      <section class="footer-contact">
+        <strong>고객센터 1544-0000</strong>
+        <p>평일 09:00 - 18:00 (주말/공휴일 휴무)<br/>이메일: support@bookstore.com</p>
+      </section>
+    </div>
+
+    <div class="footer-bottom">
+      <nav>
+        <a th:href="@{/sitemap}">사이트맵</a>
+        <a th:href="@{/advertising}">광고안내</a>
+        <a th:href="@{/partners}">파트너스</a>
+      </nav>
+      <p>
+        &copy; <span th:text="${#dates.format(#dates.createNow(),'yyyy')}">2025</span> BookStore. All rights reserved.
+      </p>
+    </div>
+  </div>
 </footer>
 </body>
 </html>
