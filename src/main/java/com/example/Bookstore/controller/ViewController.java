@@ -201,7 +201,7 @@ public class ViewController {
     }
     private static java.util.Map<String, Object> payment() {
         java.util.Map<String, Object> m = new java.util.HashMap<>();
-        m.put("method", "CARD");
+        m.put("method", "KAKAOPAY");
         m.put("status", "PENDING");
         m.put("amount", 0);
         return m;
