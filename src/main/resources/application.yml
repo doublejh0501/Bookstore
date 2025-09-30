@@ -1,9 +1,29 @@
 spring:
   datasource:
-    url: jdbc:mysql://localhost:3307/bookstore?useSSL=false&serverTimezone=UTC&characterEncoding=UTF-8
+    url: jdbc:mysql://localhost:3307/bookstore?useSSL=false&allowPublicKeyRetrieval=true&serverTimezone=UTC&characterEncoding=UTF-8
     username: bookstore
     password: bookstore123
     driver-class-name: com.mysql.cj.jdbc.Driver
+
+  data:
+    redis:
+      host: ${REDIS_HOST:localhost} # Redis 호스트 (기본 localhost)
+      port: ${REDIS_PORT:6379} # Redis 포트 (기본 6379)
+      password: ${REDIS_PASSWORD:} # 필요 시 비밀번호 입력
+      database: ${REDIS_DATABASE:0} # 논리적 DB 번호
+
+  mail:
+    host: ${MAILTRAP_HOST:sandbox.smtp.mailtrap.io}
+    port: ${MAILTRAP_PORT:2525}
+    username: ${MAILTRAP_USERNAME:}
+    password: ${MAILTRAP_PASSWORD:}
+    properties:
+      mail:
+        smtp:
+          auth: true
+          starttls:
+            enable: true
+
 
   jpa:
     hibernate:
@@ -15,3 +35,49 @@ spring:
 
 server:
   port: 8080
+
+security:
+  jwt:
+    # 현재 서비스에서 활성화할 키 ID. 환경변수 JWT_ACTIVE_KID 로 덮어쓸 수 있습니다.
+    active-kid: ${JWT_ACTIVE_KID:primary}
+#    active-kid: primary
+    # kid→secret 쌍을 쉼표로 구분한 문자열 형태로 받습니다. 예) "primary:base64key1,standby:base64key2"
+    secret-map-raw: ${JWT_SECRET:}
+#    secret-map-raw: "primary:U0dGd1NHTndTR04wU0dOMFNHTndTR05B"
+    access-token:
+      # 액세스 토큰 만료 시간을 초 단위로 지정합니다. 기본값은 600초(10분)입니다.
+      expiry-seconds: ${JWT_ACCESS_EXPIRY_SECONDS:600}
+      # HttpOnly 쿠키 이름은 BOOKSTORE_AT 로 고정합니다.
+      cookie-name: ${JWT_ACCESS_COOKIE_NAME:BOOKSTORE_AT}
+      # 쿠키 유효 경로 지정 (로그아웃 시 동일 경로에 Max-Age=0 로 설정해야 합니다).
+      cookie-path: ${JWT_ACCESS_COOKIE_PATH:/}
+      # Secure 플래그 기본값을 true 로 설정합니다.
+      cookie-secure: ${JWT_ACCESS_COOKIE_SECURE:true}
+      # HttpOnly 플래그 기본값을 true 로 설정합니다.
+      cookie-http-only: ${JWT_ACCESS_COOKIE_HTTP_ONLY:true}
+      # SameSite 속성은 Lax 로 설정합니다.
+      cookie-same-site: ${JWT_ACCESS_COOKIE_SAME_SITE:Lax}
+    refresh-token:
+      # 리프레시 토큰 만료 시간은 기본 14일(1209600초)로 설정합니다.
+      expiry-seconds: ${JWT_REFRESH_EXPIRY_SECONDS:1209600}
+      # Redis 화이트리스트 키를 구성할 때 사용할 네임스페이스 접두사입니다.
+      redis-namespace: ${JWT_REFRESH_REDIS_NAMESPACE:auth:refresh}
+      # 각 리프레시 토큰의 재사용 감지를 위한 JTI(고유 식별자) 접두사입니다.
+      jti-prefix: ${JWT_REFRESH_JTI_PREFIX:jwt:rt}
+      # 리프레시 토큰을 클라이언트에 전달하기 위한 HttpOnly 쿠키 이름입니다.
+      cookie-name: ${JWT_REFRESH_COOKIE_NAME:BOOKSTORE_RT}
+      # 쿠키가 적용될 경로입니다. 기본적으로 전체 경로에 대해 전송합니다.
+      cookie-path: ${JWT_REFRESH_COOKIE_PATH:/}
+      # HTTPS 연결에서만 전송되도록 Secure 플래그를 활성화합니다.
+      cookie-secure: ${JWT_REFRESH_COOKIE_SECURE:true}
+      # 자바스크립트에서 접근하지 못하도록 HttpOnly 를 유지합니다.
+      cookie-http-only: ${JWT_REFRESH_COOKIE_HTTP_ONLY:true}
+      # SameSite 속성은 CSRF 방지를 위해 Strict 로 설정합니다.
+      cookie-same-site: ${JWT_REFRESH_COOKIE_SAME_SITE:Strict}
+
+app:
+  mail:
+    from: ${APP_MAIL_FROM:no-reply@bookstore.local}
+  password-reset:
+    base-url: ${APP_PASSWORD_RESET_BASE_URL:http://localhost:8080/password/reset}
+    token-expiry: ${APP_PASSWORD_RESET_TOKEN_EXPIRY:30m}
