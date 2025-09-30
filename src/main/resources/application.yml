@@ -39,19 +39,19 @@ server:
 security:
   jwt:
     # 현재 서비스에서 활성화할 키 ID. 환경변수 JWT_ACTIVE_KID 로 덮어쓸 수 있습니다.
-    active-kid: ${JWT_ACTIVE_KID:primary}
-#    active-kid: primary
+    # active-kid: ${JWT_ACTIVE_KID:primary}
+    active-kid: primary
     # kid→secret 쌍을 쉼표로 구분한 문자열 형태로 받습니다. 예) "primary:base64key1,standby:base64key2"
-    secret-map-raw: ${JWT_SECRET:}
-#    secret-map-raw: "primary:U0dGd1NHTndTR04wU0dOMFNHTndTR05B"
+    # secret-map-raw: ${JWT_SECRET:}
+    secret-map-raw: "primary:U0dGd1NHTndTR04wU0dOMFNHTndTR05B"
     access-token:
       # 액세스 토큰 만료 시간을 초 단위로 지정합니다. 기본값은 600초(10분)입니다.
       expiry-seconds: ${JWT_ACCESS_EXPIRY_SECONDS:600}
       # HttpOnly 쿠키 이름은 BOOKSTORE_AT 로 고정합니다.
       cookie-name: ${JWT_ACCESS_COOKIE_NAME:BOOKSTORE_AT}
-      # 쿠키 유효 경로 지정 (로그아웃 시 동일 경로에 Max-Age=0 로 설정해야 합니다).
+      # 쿠키 유효 경로 지정 (로그아웃 시 동일 경로에 Max-Age=0(쿠키의 남은 수명을 “0초”로 설정, 브라우저에게 “즉시 삭제하라”는 지시)로 설정해야함).
       cookie-path: ${JWT_ACCESS_COOKIE_PATH:/}
-      # Secure 플래그 기본값을 true 로 설정합니다.
+      # true는 “HTTPS 전용 쿠키”, false는 “HTTP/HTTPS 공통 쿠키”
       cookie-secure: ${JWT_ACCESS_COOKIE_SECURE:true}
       # HttpOnly 플래그 기본값을 true 로 설정합니다.
       cookie-http-only: ${JWT_ACCESS_COOKIE_HTTP_ONLY:true}
