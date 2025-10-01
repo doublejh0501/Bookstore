@@ -4,7 +4,7 @@
 <section th:fragment="content">
   <h1>주문 결제</h1>
 
-  <form th:action="@{/checkout}" method="post">
+  <form th:action="@{/payments/kakao/ready}" method="post">
     <fieldset>
       <legend>배송지</legend>
       <input type="text" name="receiver" placeholder="수령인" th:value="${checkout?.receiver}" required />
@@ -14,11 +14,10 @@
 
     <fieldset>
       <legend>결제수단</legend>
-      <select name="method">
-        <option value="KAKAOPAY">카카오페이</option>
-        <option value="CARD">신용카드</option>
-        <option value="BANK">무통장입금</option>
+      <select name="method" disabled>
+        <option value="KAKAOPAY" selected>카카오페이</option>
       </select>
+      <small>현재 카카오페이만 지원합니다.</small>
     </fieldset>
 
     <fieldset>
@@ -32,7 +31,8 @@
     </section>
 
     <input type="hidden" th:if="${_csrf != null}" th:name="${_csrf.parameterName}" th:value="${_csrf.token}" />
-    <button type="submit">결제 요청</button>
+    <input type="hidden" name="userId" value="1" />
+    <button type="submit">카카오페이로 결제</button>
   </form>
 </section>
 </html>

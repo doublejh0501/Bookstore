@@ -60,7 +60,7 @@ public class SecurityConfig {
             .requestMatchers(
                 "/", "/login", "/signup", "/signup/**", "/password/**",
                 "/error", "/error/**", "/css/**", "/js/**", "/images/**",
-                "/csrf-token", "/books/**").permitAll()
+                "/csrf-token", "/books/**", "/payments/kakao/**").permitAll()
             .requestMatchers("/admin/**").hasRole("ADMIN")
             .anyRequest().authenticated())
         .formLogin(form -> form.disable())

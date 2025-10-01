@@ -115,6 +115,85 @@ public class OrderService {
         return order;
     }
 
+    /**
+     * Prepare an order from the user's active cart for KakaoPay: create Order and PENDING Payment.
+     * Does not capture or adjust inventory/cart. Meant to be followed by KakaoPay approval.
+     */
+    @Transactional
+    public Order prepareOrderFromCartForKakao(Long userId) {
+        Cart cart = cartRepository.findByUser_IdAndStatus(userId, CartStatus.ACTIVE)
+                .orElseThrow(() -> new EntityNotFoundException("Active cart not found for user: " + userId));
+
+        List<CartItem> items = cart.getItems();
+        if (items == null || items.isEmpty()) {
+            throw new IllegalStateException("Cart is empty");
+        }
+
+        BigDecimal total = BigDecimal.ZERO;
+        for (CartItem ci : items) {
+            Book book = ci.getBook();
+            Inventory inv = inventoryRepository.findByBook_Id(book.getId())
+                    .orElseThrow(() -> new IllegalStateException("Inventory not found for book: " + book.getId()));
+            long qty = ci.getQuantity() == null ? 0L : ci.getQuantity();
+            if (qty <= 0) throw new IllegalStateException("Invalid quantity for book: " + book.getId());
+            if (inv.getQuantity() < qty) {
+                throw new IllegalStateException("Insufficient stock for book: " + book.getId());
+            }
+            total = total.add(book.getPrice().multiply(BigDecimal.valueOf(qty)));
+        }
+
+        Order order = Order.builder()
+                .user(cart.getUser())
+                .status(OrderStatus.PENDING)
+                .totalAmount(total)
+                .build();
+
+        List<OrderItem> orderItems = new ArrayList<>();
+        for (CartItem ci : items) {
+            OrderItem oi = OrderItem.builder()
+                    .order(order)
+                    .book(ci.getBook())
+                    .quantity(ci.getQuantity().intValue())
+                    .unitPrice(ci.getBook().getPrice())
+                    .build();
+            orderItems.add(oi);
+        }
+        order.setItems(orderItems);
+        order = orderRepository.save(order);
+
+        // Create PENDING payment without capture, providerTransactionId will be set with Kakao TID later.
+        Payment payment = paymentService.createPayment(order, PaymentMethod.KAKAOPAY, total);
+        paymentRepository.save(payment);
+        return order;
+    }
+
+    /** Finalize order after KakaoPay approval: mark paid, adjust inventory and clear cart. */
+    @Transactional
+    public void finalizeOrderPaid(Long orderId) {
+        Order order = orderRepository.findById(orderId)
+                .orElseThrow(() -> new EntityNotFoundException("Order not found: " + orderId));
+
+        // Update payment status to CAPTURED
+        paymentRepository.findByOrderId(orderId).ifPresent(paymentService::authorizeAndCapture);
+
+        order.setStatus(OrderStatus.PAID);
+        for (OrderItem oi : order.getItems()) {
+            Inventory inv = inventoryRepository.findByBook_Id(oi.getBook().getId())
+                    .orElseThrow(() -> new IllegalStateException("Inventory not found for book: " + oi.getBook().getId()));
+            inv.setQuantity(inv.getQuantity() - oi.getQuantity());
+            inventoryRepository.save(inv);
+        }
+
+        // Clear cart
+        Cart cart = cartRepository.findByUser_IdAndStatus(order.getUser().getId(), CartStatus.ACTIVE)
+                .orElse(null);
+        if (cart != null) {
+            cart.setStatus(CartStatus.CHECKED_OUT);
+            cartItemRepository.deleteAll(new ArrayList<>(cart.getItems()));
+            cart.getItems().clear();
+        }
+    }
+
     @Transactional
     public void cancelOrder(Long userId, Long orderId) {
         Order order = orderRepository.findById(orderId)
