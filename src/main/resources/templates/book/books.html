@@ -36,9 +36,9 @@
     /* ✅ 카드 3열 & 간격 넓힘 */
     .books-grid {
       display: grid;
-      grid-template-columns: repeat(3, 260px);
+      grid-template-columns: repeat(4, 260px);
       justify-content: center;
-      gap: 100px; /* 카드 간격 넓힘 */
+      gap: 60px; /* 카드 간격 넓힘 */
       list-style: none;
       margin: 0;
       padding: 0;
@@ -95,10 +95,16 @@
 
     .book-card h3 {
       margin: 0;
+      margin-top: 12px;
       font-size: 17px;
       font-weight: 700;
       color: var(--text-strong);
       line-height: 1.4;
+      display: -webkit-box;
+      -webkit-line-clamp: 2;   /* ✅ 최대 2줄 */
+      -webkit-box-orient: vertical;
+      overflow: hidden;
+      min-height: calc(1.4em * 2); /* 줄 고정 공백 확보 */
     }
     .book-card h3 a {
       color: inherit;
@@ -130,7 +136,7 @@
     .book-actions {
       display: flex;
       gap: 8px;
-      margin-top: 12px;
+      margin-top: 5px;
     }
     .book-button {
       flex: 1;
@@ -180,10 +186,19 @@
     }
 
     .pagination {
-      display: flex;
+      display: block;
       justify-content: center;
       gap: 8px;
-      margin-top: 20px;
+      margin-top: 30px;
+    }
+    .pagination ul {           /* ← 여기에 flex 주기 */
+      display: flex;
+      gap: 8px;
+      justify-content: center;
+      align-items: center;
+      flex-wrap: wrap;         /* 숫자 많을 때 줄바꿈 허용(선택) */
+      padding: 0;
+      margin: 0;
     }
     .pagination li { list-style: none; }
     .pagination a, .pagination span {
