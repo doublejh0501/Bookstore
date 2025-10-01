@@ -1,6 +1,7 @@
 package com.example.Bookstore.config; // 보안 전반 설정 패키지
 
 import com.example.Bookstore.security.auth.JwtUserDetailsService; // DaoAuthenticationProvider 구성에 사용
+import com.example.Bookstore.security.csrf.CsrfCookieRefreshFilter; // 로그인 후 CSRF 쿠키 재발급 필터
 import com.example.Bookstore.security.jwt.JwtAccessDeniedHandler; // 403 응답 처리 핸들러
 import com.example.Bookstore.security.jwt.JwtAuthenticationEntryPoint; // 401 응답 처리 핸들러
 import com.example.Bookstore.security.jwt.JwtAuthenticationFilter; // HttpOnly 쿠키 기반 JWT 인증 필터
@@ -22,6 +23,7 @@ import org.springframework.security.web.SecurityFilterChain; // 최종 보안 �
 import org.springframework.security.web.authentication.UsernamePasswordAuthenticationFilter; // 커스텀 필터 위치 지정
 import org.springframework.security.web.csrf.CookieCsrfTokenRepository; // 쿠키 기반 CSRF 토큰 저장소
 import org.springframework.security.web.csrf.CsrfTokenRequestAttributeHandler; // CSRF 토큰 요청 속성 핸들러
+import org.springframework.security.web.csrf.CsrfFilter; // CSRF 필터 위치 참조
 
 /**
  * 전체 애플리케이션의 보안 규칙과 인증 관련 빈을 구성합니다.
@@ -49,6 +51,7 @@ public class SecurityConfig {
         .csrf(csrf -> csrf
             .csrfTokenRepository(csrfTokenRepository)
             .csrfTokenRequestHandler(csrfTokenRequestHandler))
+        .addFilterAfter(new CsrfCookieRefreshFilter(), CsrfFilter.class)
         .sessionManagement(session -> session.sessionCreationPolicy(SessionCreationPolicy.STATELESS))
         .authenticationProvider(authenticationProvider)
         .addFilterBefore(jwtAuthenticationFilter, UsernamePasswordAuthenticationFilter.class)
