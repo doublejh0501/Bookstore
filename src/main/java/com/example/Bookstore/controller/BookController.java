@@ -28,7 +28,7 @@ public class BookController {
                         @RequestParam(required = false) String keyword,
                         @RequestParam(defaultValue = "title") String field,
                         @RequestParam(defaultValue = "0") int page,
-                        @RequestParam(defaultValue = "10") int size,
+                        @RequestParam(defaultValue = "12") int size,
                         Model model) {
         PageRequest pageable = PageRequest.of(page, size);
         Page<Book> books;
