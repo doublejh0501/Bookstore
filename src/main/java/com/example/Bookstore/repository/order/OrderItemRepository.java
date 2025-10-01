@@ -17,3 +17,4 @@ public interface OrderItemRepository extends JpaRepository<OrderItem, Long> {
     boolean existsByOrderIdAndBookId(Long orderId, Long bookId);
 }
 
+
