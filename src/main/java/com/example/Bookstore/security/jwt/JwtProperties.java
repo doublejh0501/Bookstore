@@ -1,4 +1,4 @@
-package com.example.Bookstore.security.jwt; // JWT 관련 설정값을 보관할 패키지 선언(기존 프로젝트 패키지 컨벤션에 맞춰 대문자 B 유지)
+package com.example.Bookstore.security.jwt; // JWT 관련 설정값을 보관할 패키지 선언
 
 import jakarta.annotation.PostConstruct; // 설정 바인딩 이후 유효성 검증을 수행하기 위해 PostConstruct 사용
 import java.nio.charset.StandardCharsets; // 시크릿 길이 검증을 위해 바이트 배열 길이를 손쉽게 얻기 위한 유틸
