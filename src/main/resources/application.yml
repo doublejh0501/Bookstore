@@ -24,7 +24,6 @@ spring:
           starttls:
             enable: true
 
-
   jpa:
     hibernate:
       ddl-auto: update
@@ -39,11 +38,10 @@ server:
 security:
   jwt:
     # 현재 서비스에서 활성화할 키 ID. 환경변수 JWT_ACTIVE_KID 로 덮어쓸 수 있습니다.
-    # active-kid: ${JWT_ACTIVE_KID:primary}
-    active-kid: primary
+    active-kid: ${JWT_ACTIVE_KID:primary}
     # kid→secret 쌍을 쉼표로 구분한 문자열 형태로 받습니다. 예) "primary:base64key1,standby:base64key2"
-    # secret-map-raw: ${JWT_SECRET:}
-    secret-map-raw: "primary:U0dGd1NHTndTR04wU0dOMFNHTndTR05B"
+    secret-map-raw: ${JWT_SECRET:}
+    # 엑세스 토큰 : 짧은 만료 시간을 가진 인증 증표(즉시 인증용)
     access-token:
       # 액세스 토큰 만료 시간을 초 단위로 지정합니다. 기본값은 600초(10분)입니다.
       expiry-seconds: ${JWT_ACCESS_EXPIRY_SECONDS:600}
@@ -55,14 +53,15 @@ security:
       cookie-secure: ${JWT_ACCESS_COOKIE_SECURE:true}
       # HttpOnly 플래그 기본값을 true 로 설정합니다.
       cookie-http-only: ${JWT_ACCESS_COOKIE_HTTP_ONLY:true}
-      # SameSite 속성은 Lax 로 설정합니다.
+      # SameSite 속성을 Lax로 설정(일반적인 이동 요청에는 쿠키를 붙이되, 폼 POST 같은 교차 사이트 요청에는 붙이지 않는다)
       cookie-same-site: ${JWT_ACCESS_COOKIE_SAME_SITE:Lax}
+    # 리프레시 토큰 : 액세스 토큰을 새로 발급받기 위한 증표(재발급용)
     refresh-token:
       # 리프레시 토큰 만료 시간은 기본 14일(1209600초)로 설정합니다.
       expiry-seconds: ${JWT_REFRESH_EXPIRY_SECONDS:1209600}
       # Redis 화이트리스트 키를 구성할 때 사용할 네임스페이스 접두사입니다.
       redis-namespace: ${JWT_REFRESH_REDIS_NAMESPACE:auth:refresh}
-      # 각 리프레시 토큰의 재사용 감지를 위한 JTI(고유 식별자) 접두사입니다.
+      # 각 리프레시 토큰의 재사용 감지를 위한 JTI(고유 식별자) 접두사입니다. JTI는 “리프레시 토큰 하나하나를 식별하고 추적하기 위한 ID”라서 화이트리스트 관리, 재사용 감지, 개별 무효화에 핵심 역할을 합니다.
       jti-prefix: ${JWT_REFRESH_JTI_PREFIX:jwt:rt}
       # 리프레시 토큰을 클라이언트에 전달하기 위한 HttpOnly 쿠키 이름입니다.
       cookie-name: ${JWT_REFRESH_COOKIE_NAME:BOOKSTORE_RT}
@@ -72,7 +71,7 @@ security:
       cookie-secure: ${JWT_REFRESH_COOKIE_SECURE:true}
       # 자바스크립트에서 접근하지 못하도록 HttpOnly 를 유지합니다.
       cookie-http-only: ${JWT_REFRESH_COOKIE_HTTP_ONLY:true}
-      # SameSite 속성은 CSRF 방지를 위해 Strict 로 설정합니다.
+      # SameSite 속성은 CSRF 방지를 위해 Strict 로 설정합니다. (완전히 같은 사이트에서 온 요청에만 쿠키를 보낸다. 다른 사이트에서 링크를 눌러 들어오면 쿠키가 안붇음)
       cookie-same-site: ${JWT_REFRESH_COOKIE_SAME_SITE:Strict}
 
 app:

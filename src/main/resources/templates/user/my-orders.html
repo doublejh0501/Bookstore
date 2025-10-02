@@ -1,30 +1,399 @@
 <!DOCTYPE html>
 <html lang="ko" xmlns:th="http://www.thymeleaf.org"
       th:replace="_fragments/layout :: layout(~{::section}, '나의 주문')">
-<section th:fragment="content">
-  <h1>나의 주문</h1>
+<section class="my-orders-page" th:fragment="content">
+  <style>
+    :root {
+      --primary-color: #0046ff;
+      --primary-dark: #1737c2;
+      --bg-muted: #f6f8fb;
+      --border-color: #e5e8eb;
+      --text-strong: #1f2d3d;
+      --text-muted: #64748b;
+      --status-pending: #f59e0b;
+      --status-pending-rgb: 245, 158, 11;
+      --status-paid: #2563eb;
+      --status-paid-rgb: 37, 99, 235;
+      --status-shipped: #0f766e;
+      --status-shipped-rgb: 15, 118, 110;
+      --status-completed: #15803d;
+      --status-completed-rgb: 21, 128, 61;
+      --status-cancelled: #b91c1c;
+      --status-cancelled-rgb: 185, 28, 28;
+    }
 
-  <table>
-    <thead>
-    <tr>
-      <th>주문번호</th>
-      <th>주문일</th>
-      <th>상태</th>
-      <th>금액</th>
-      <th>관리</th>
-    </tr>
-    </thead>
-    <tbody>
-    <tr th:each="o : ${myOrders}">
-      <td th:text="${o.id}">-</td>
-      <td th:text="${#temporals.format(o.createdAt,'yyyy-MM-dd HH:mm')}">-</td>
-      <td th:text="${o.status}">PAID</td>
-      <td th:text="${#numbers.formatInteger(o.totalPrice,3,'COMMA')}">0</td>
-      <td><a th:href="@{|/mypage/orders/${o.id}|}">상세</a></td>
-    </tr>
-    <tr th:if="${#lists.isEmpty(myOrders)}"
-        th:replace="_fragments/table-empty :: emptyRow(5, '주문이 없습니다.')"></tr>
-    </tbody>
-  </table>
+    .my-orders-page {
+      background: var(--bg-muted);
+      min-height: 100vh;
+      padding: 32px 0 48px;
+      font-family: "Noto Sans KR", Arial, sans-serif;
+    }
+
+    .my-orders-container {
+      max-width: 1100px;
+      margin: 0 auto;
+      padding: 0 24px;
+      display: flex;
+      flex-direction: column;
+      gap: 24px;
+    }
+
+    .my-orders-header {
+      display: flex;
+      flex-direction: column;
+      gap: 8px;
+    }
+
+    .my-orders-header h1 {
+      margin: 0;
+      font-size: 28px;
+      font-weight: 700;
+      color: var(--text-strong);
+    }
+
+    .my-orders-header p {
+      margin: 0;
+      font-size: 14px;
+      color: var(--text-muted);
+    }
+
+    .order-card {
+      background: #fff;
+      border-radius: 18px;
+      border: 1px solid var(--border-color);
+      box-shadow: 0 12px 32px rgba(15, 30, 65, 0.08);
+      overflow: hidden;
+    }
+
+    .order-card + .order-card {
+      margin-top: 24px;
+    }
+
+    .order-header {
+      display: flex;
+      align-items: center;
+      justify-content: space-between;
+      gap: 16px;
+      padding: 20px 24px 12px;
+      border-bottom: 1px solid rgba(229, 232, 235, 0.7);
+    }
+
+    .order-header-meta {
+      display: flex;
+      flex-direction: column;
+      gap: 6px;
+    }
+
+    .order-date {
+      font-size: 16px;
+      font-weight: 600;
+      color: var(--text-strong);
+    }
+
+    .order-number {
+      font-size: 13px;
+      color: var(--text-muted);
+    }
+
+    .order-header-actions {
+      display: flex;
+      align-items: center;
+      gap: 12px;
+    }
+
+    .order-status-text {
+      font-size: 15px;
+      font-weight: 700;
+      color: var(--primary-color);
+    }
+
+    .order-summary-count {
+      font-size: 13px;
+      font-weight: 600;
+      color: var(--text-muted);
+    }
+
+    .order-total {
+      font-size: 15px;
+      font-weight: 700;
+      color: var(--text-strong);
+    }
+
+    .order-link {
+      display: inline-flex;
+      align-items: center;
+      justify-content: center;
+      gap: 6px;
+      padding: 10px 18px;
+      border-radius: 10px;
+      font-size: 13px;
+      font-weight: 600;
+      color: #fff;
+      background: var(--primary-color);
+      text-decoration: none;
+      transition: background-color 0.2s ease, box-shadow 0.2s ease;
+    }
+
+    .order-link:hover,
+    .order-link:focus-visible {
+      background: var(--primary-dark);
+      box-shadow: 0 8px 20px rgba(0, 70, 255, 0.2);
+      outline: none;
+    }
+
+    .order-items {
+      display: flex;
+      flex-direction: column;
+    }
+
+    .order-item {
+      display: grid;
+      grid-template-columns: auto 1fr auto;
+      gap: 18px;
+      padding: 18px 24px;
+      border-bottom: 1px solid rgba(229, 232, 235, 0.7);
+      align-items: center;
+    }
+
+    .order-item:last-child {
+      border-bottom: none;
+      padding-bottom: 24px;
+    }
+
+    .order-item-thumb {
+      width: 96px;
+      height: 128px;
+      border-radius: 12px;
+      overflow: hidden;
+      background: #f1f5f9;
+      display: flex;
+      align-items: center;
+      justify-content: center;
+    }
+
+    .order-item-thumb a,
+    .order-item-thumb > div {
+      display: flex;
+      width: 100%;
+      height: 100%;
+      align-items: center;
+      justify-content: center;
+    }
+
+    .order-item-thumb img {
+      width: 100%;
+      height: 100%;
+      object-fit: cover;
+    }
+
+    .order-item-thumb-placeholder {
+      width: 100%;
+      height: 100%;
+      display: flex;
+      align-items: center;
+      justify-content: center;
+      font-size: 12px;
+      color: var(--text-muted);
+      border: 1px dashed var(--border-color);
+      background: #fff;
+    }
+
+    .order-item-info {
+      display: flex;
+      flex-direction: column;
+      gap: 8px;
+    }
+
+    .order-item-title {
+      margin: 0;
+      font-size: 18px;
+      font-weight: 600;
+      color: var(--text-strong);
+      line-height: 1.4;
+    }
+
+    .order-item-title a {
+      color: inherit;
+      text-decoration: none;
+    }
+
+    .order-item-title a:hover {
+      color: var(--primary-color);
+    }
+
+    .order-item-meta {
+      display: flex;
+      gap: 12px;
+      font-size: 13px;
+      color: var(--text-muted);
+    }
+
+    .order-item-qty {
+      font-weight: 600;
+      color: var(--text-strong);
+    }
+
+    .order-item-right {
+      text-align: right;
+      display: flex;
+      flex-direction: row;
+      gap: 70px;
+      align-items: center;
+      justify-content: flex-end;
+    }
+
+    .order-item-price {
+      font-size: 18px;
+      font-weight: 700;
+      color: var(--text-strong);
+    }
+
+    .order-item-unit {
+      font-size: 12px;
+      color: var(--text-muted);
+    }
+
+    .order-review-button {
+      display: inline-flex;
+      align-items: center;
+      justify-content: center;
+      padding: 10px 16px;
+      border-radius: 10px;
+      font-size: 14px;
+      font-weight: 600;
+      border: 1px solid var(--primary-color);
+      background: transparent;
+      color: var(--primary-color);
+      text-decoration: none;
+      cursor: pointer;
+      transition: background-color .2s ease, color .2s ease;
+    }
+
+    .order-review-button:hover,
+    .order-review-button:focus-visible {
+      background: rgba(0, 70, 255, 0.08);
+      color: var(--primary-dark);
+      outline: none;
+    }
+
+    .orders-empty {
+      background: #fff;
+      border-radius: 18px;
+      border: 1px dashed var(--border-color);
+      padding: 60px 24px;
+      text-align: center;
+      color: var(--text-muted);
+      font-size: 15px;
+      box-shadow: 0 10px 26px rgba(15, 30, 65, 0.06);
+    }
+
+    @media (max-width: 768px) {
+      .order-header {
+        flex-direction: column;
+        align-items: flex-start;
+      }
+
+      .order-header-actions {
+        flex-wrap: wrap;
+        justify-content: flex-start;
+      }
+
+      .order-item {
+        grid-template-columns: 96px 1fr;
+        grid-template-areas:
+          "thumb info"
+          "thumb right";
+      }
+
+      .order-item-right {
+        grid-area: right;
+        flex-direction: column;
+        align-items: flex-start;
+        gap: 8px;
+        text-align: left;
+      }
+    }
+  </style>
+
+  <div class="my-orders-container">
+    <div class="my-orders-header">
+      <h1>나의 주문</h1>
+      <p>최근에 구매하신 순서대로 주문 내역을 확인하세요.</p>
+    </div>
+
+    <div th:if="${!#lists.isEmpty(myOrders)}">
+      <article class="order-card" th:each="order : ${myOrders}">
+        <header class="order-header">
+          <div class="order-header-meta">
+            <div class="order-date"
+                 th:text="${#temporals.format(order.createdAt,'yyyy년 MM월 dd일 HH:mm')}">
+              2025년 01월 01일 10:00
+            </div>
+            <div class="order-number" th:text="|주문번호 #${order.id}|">주문번호 #1</div>
+          </div>
+          <div class="order-header-actions">
+<!--            <span class="order-status-text"-->
+<!--                  th:text="${order.statusLabel()}">결제 완료</span>-->
+            <div class="order-summary-count"
+                 th:text="|총 상품 수 ${order.totalQuantity}권|">
+              총 상품 수 0권
+            </div>
+            <div class="order-total"
+                 th:text="|총 결제 금액 ${#numbers.formatDecimal(order.totalAmount, 1, 'COMMA', 0, 'POINT')}원|">
+              총 결제 금액 0원
+            </div>
+<!--            <a class="order-link" th:href="@{|/mypage/orders/${order.id}|}">상세 보기</a>-->
+          </div>
+        </header>
+
+        <div class="order-items">
+          <article class="order-item" th:each="item : ${order.items}">
+            <div class="order-item-thumb">
+              <a th:if="${item.bookId != null}" th:href="@{|/books/${item.bookId}|}" class="order-item-thumb-link">
+                <img th:if="${item.imageUrl}" th:src="${item.imageUrl}" th:alt="${item.title}">
+                <div class="order-item-thumb-placeholder" th:if="${item.imageUrl == null}">
+                  이미지 없음
+                </div>
+              </a>
+              <div th:if="${item.bookId == null}">
+                <img th:if="${item.imageUrl}" th:src="${item.imageUrl}" th:alt="${item.title}">
+                <div class="order-item-thumb-placeholder" th:if="${item.imageUrl == null}">
+                  이미지 없음
+                </div>
+              </div>
+            </div>
+            <div class="order-item-info">
+              <h3 class="order-item-title">
+                <a th:if="${item.bookId != null}"
+                   th:href="@{|/books/${item.bookId}|}"
+                   th:text="${item.title}">도서 제목</a>
+                <span th:if="${item.bookId == null}"
+                      th:text="${item.title}">도서 제목</span>
+              </h3>
+              <div class="order-item-meta">
+                <span class="order-item-qty" th:text="|수량 ${item.quantity}권|">수량 1권</span>
+                <span class="order-item-unit"
+                      th:text="|개당 ${#numbers.formatDecimal(item.unitPrice, 1, 'COMMA', 0, 'POINT')}원|">
+                  개당 0원
+                </span>
+              </div>
+            </div>
+            <div class="order-item-right">
+              <div class="order-item-price"
+                   th:text="|${#numbers.formatDecimal(item.lineTotal, 1, 'COMMA', 0, 'POINT')}원|">
+                0원
+              </div>
+              <div class="order-status-text" th:text="${order.statusLabel()}">결제 완료</div>
+              <a class="order-review-button" href="#">리뷰 작성</a>
+            </div>
+          </article>
+        </div>
+      </article>
+    </div>
+
+    <div class="orders-empty" th:if="${#lists.isEmpty(myOrders)}">
+      아직 주문하신 내역이 없습니다. 마음에 드는 책을 찾아보세요!
+    </div>
+  </div>
 </section>
 </html>

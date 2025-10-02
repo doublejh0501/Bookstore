@@ -123,8 +123,8 @@
       </div>
 
       <nav class="header-links">
-        <a th:href="@{/cart}">장바구니</a>
-        <a th:href="@{/mypage/orders}">마이페이지</a>
+        <a sec:authorize="isAuthenticated()" th:href="@{/cart}">장바구니</a>
+        <a sec:authorize="isAuthenticated()" th:href="@{/mypage/orders}">마이페이지</a>
         <a sec:authorize="isAnonymous()" th:href="@{/login}">로그인</a>
         <form sec:authorize="isAuthenticated()"
               th:action="@{/logout}" method="post" class="logout-form">

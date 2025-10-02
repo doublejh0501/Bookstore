@@ -52,12 +52,6 @@ public class ViewController {
         return "user/checkout";
     }
 
-    @GetMapping("/mypage/orders")
-    public String myOrders(Model model) {
-        model.addAttribute("myOrders", java.util.List.of());
-        return "user/my-orders";
-    }
-
     @GetMapping("/mypage/orders/{id}")
     public String myOrderDetail(@PathVariable("id") Long id) { return "user/my-order-detail"; }
 
