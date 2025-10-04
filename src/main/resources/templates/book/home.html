@@ -1,0 +1,590 @@
+<!DOCTYPE html>
+<html lang="ko" xmlns:th="http://www.thymeleaf.org"
+      th:replace="_fragments/layout :: layout(~{::section}, '홈')">
+<meta charset="UTF-8" />
+
+<section class="home" th:fragment="content">
+  <style>
+    :root {
+      --primary: #0f4cff;
+      --primary-dark: #002d9f;
+      --accent: #ff7a59;
+      --bg-soft: #f5f7fb;
+      --surface: #ffffff;
+      --text-strong: #1b2559;
+      --text-muted: #6c7393;
+    }
+
+    .home {
+      background: var(--bg-soft);
+      min-height: 100vh;
+      font-family: "Noto Sans KR", Arial, sans-serif;
+    }
+
+    .home__inner {
+      max-width: 1180px;
+      margin: 0 auto;
+      padding: 28px 24px 72px;
+      display: flex;
+      flex-direction: column;
+      gap: 36px;
+    }
+
+    .hero {
+      display: grid;
+      grid-template-columns: minmax(0, 540px) minmax(0, 1fr);
+      gap: 30px;
+      background: #010d85;
+      color: #fff;
+      border-radius: 28px;
+      padding: 42px 46px;
+      box-shadow: 0 22px 48px rgba(8, 18, 46, 0.32);
+      position: relative;
+      overflow: hidden;
+    }
+
+    .hero::after {
+      content: "";
+      position: absolute;
+      inset: 0;
+      background: radial-gradient(circle at 15% 20%, rgba(255,255,255,0.16), transparent 55%),
+      radial-gradient(circle at 85% 15%, rgba(255,255,255,0.14), transparent 50%),
+      radial-gradient(circle at 50% 80%, rgba(255,255,255,0.12), transparent 60%);
+      pointer-events: none;
+    }
+
+    .hero__copy {
+      position: relative;
+      display: flex;
+      flex-direction: column;
+      gap: 18px;
+      z-index: 1;
+      align-self : center;
+    }
+
+    .hero__badge { align-self: flex-start; padding: 6px 16px; border-radius: 999px; background: rgba(255, 255, 255, 0.16); font-size: 0.85rem; font-weight: 600; letter-spacing: 0.05em; }
+    .hero__title {  font-size: 2.5rem; line-height: 1.28; font-weight: 800; margin-bottom: 0;}
+    .hero__desc {
+      font-size: 1.2rem;
+      color: rgba(255, 255, 255, 0.85);
+      line-height: 1.7;
+      margin-top:10px;
+      margin-bottom: 15px; /* ✅ 버튼과 간격 확보 */
+    }
+    .hero__action { display: flex; flex-wrap: wrap; gap: 12px; align-items: center; }
+    .hero__action a { display: inline-flex; align-items: center; gap: 10px; padding: 13px 22px; border-radius: 12px; font-weight: 700; text-decoration: none; transition: transform 0.18s ease, box-shadow 0.18s ease; }
+    .hero__action a.primary { background: #fff; color: var(--primary); box-shadow: 0 16px 28px rgba(12, 26, 65, 0.28); }
+    .hero__action a.primary:hover { transform: translateY(-2px); box-shadow: 0 20px 44px rgba(12, 26, 65, 0.36); }
+
+    .hero__search input { flex: 1; height: 54px; border-radius: 16px; border: 1px solid rgba(255,255,255,0.28); background: rgba(6, 12, 32, 0.35); color: #fff; padding: 0 20px; font-size: 1rem; }
+    .hero__search input::placeholder { color: rgba(255,255,255,0.6); }
+    .hero__search input:focus { outline: none; border-color: rgba(255,255,255,0.7); box-shadow: 0 0 0 4px rgba(255,255,255,0.18); }
+    .hero__search button { min-width: 150px; border-radius: 16px; border: none; background: #fff; color: var(--primary); font-weight: 700; cursor: pointer; transition: transform 0.18s ease, box-shadow 0.18s ease; }
+    .hero__search button:hover { transform: translateY(-2px); box-shadow: 0 12px 28px rgba(6, 12, 32, 0.26); }
+
+
+    .hero__best {
+      position: relative;
+      z-index: 1;
+      border-radius: 22px;
+      background: rgba(255, 255, 255, 0.16);
+      padding: 22px 24px 58px; /* 아래 여백 살짝 늘림(버튼 자리) */
+      display: flex;
+      flex-direction: column;
+      gap: 16px;
+      box-shadow: 0 8px 20px rgba(0, 0, 0, 0.12);
+    }
+
+    .hero__best-header { display: flex; justify-content: space-between; align-items: center; gap: 15px; color: #fff; }
+    .hero__best-title { margin: 0; font-size: 1.3rem; font-weight: 700; color: #ffffff; }
+
+    /* ===== 캐러셀 레이아웃 ===== */
+    .carousel {
+      position: relative;
+      width: min(100%, 420px);
+      margin: 0 auto;
+    }
+    .carousel__viewport {
+      overflow: hidden;
+      width: 100%;
+    }
+    .hero__best-list {
+      --gap: 16px;                 /* ← 변수화(원하면 기존 16px 그대로 둬도 됨) */
+      margin: 0;
+      padding: 0 var(--side-pad, 0px);
+      list-style: none;
+      display: flex;
+      gap: var(--gap);
+      will-change: transform;
+      transition: transform 320ms ease;
+    }
+    .hero-card {
+      flex: 0 0 auto;
+      width: min(220px, 78vw);
+      margin: 0;
+      display: flex;
+      flex-direction: column;
+      gap: 18px;
+      background: #ffffff;
+      border-radius: 18px;
+      padding: 20px;
+      transition: transform 0.18s ease, box-shadow 0.18s ease, border-color 0.18s ease;
+      border: 1px solid rgba(1, 13, 133, 0.2);
+      box-shadow: 0 18px 34px rgba(1, 13, 133, 0.12);
+    }
+    .hero-card:hover { transform: translateY(-6px); box-shadow: 0 26px 44px rgba(1, 13, 133, 0.18); border-color: rgba(1, 13, 133, 0.4); }
+    .hero-card a { text-decoration: none; color: inherit; display: flex; flex-direction: column; gap: 12px; }
+
+    .hero-card__thumb { position: relative; width: 100%; padding-top: 135%; border-radius: 14px; background: transparent; overflow: hidden; }
+    .hero-card__thumb img { position: absolute; top: 50%; left: 50%; transform: translate(-50%, -50%); max-width: 100%; max-height: 100%; }
+    .hero-card__thumb span { position: absolute; top: 50%; left: 50%; transform: translate(-50%, -50%); color: rgba(255,255,255,0.8); font-size: 0.9rem; }
+    .hero-card__rank { display: inline-flex; align-items: center; justify-content: center; width: 40px; height: 40px; border-radius: 14px; background: #010d85; color: #fff; font-weight: 800; box-shadow: 0 12px 24px rgba(1,13,133,0.28); }
+    .hero-card__title { margin: 0; font-size: 1rem; font-weight: 700; line-height: 1.4; color: #010d85; }
+
+    .hero-card__meta { margin: 0; display: flex; flex-direction: column; gap: 6px; font-size: 0.88rem; color: #010d85; font-weight: 400; }
+    .meta-row { display: block; }
+    .meta-label { font-weight: 700; margin-right: 6px; }
+    .meta-value { font-weight: 400; }
+
+    .carousel__nav {
+      position: absolute;
+      top: 50%;
+      left: 0;
+      right: 0;
+      transform: translateY(-50%);
+      display: flex;
+      justify-content: space-between;
+      align-items: center;
+      padding: 0 12px;
+      pointer-events: none; /* 버튼만 클릭 가능하도록 */
+    }
+    .carousel__btn {
+      position: static;
+      width: 44px;
+      height: 44px;
+      border: none;
+      border-radius: 50%;
+      background: rgba(255,255,255,0.95);
+      color: #010d85;
+      font-size: 1.25rem;
+      font-weight: 800;
+      box-shadow: 0 6px 16px rgba(0,0,0,0.25);
+      cursor: pointer;
+      display: inline-flex;
+      align-items: center;
+      justify-content: center;
+      pointer-events: auto;
+    }
+    .carousel__btn:hover { background:#fff; color:#0f4cff; }
+    .carousel__btn[disabled]{ opacity:.4; cursor:not-allowed; }
+
+
+    .modules {
+      margin-top: 32px;
+      display: grid;
+      grid-template-columns: 3fr 1fr;
+      gap: 24px;
+      align-items: stretch;
+    }
+    .modules > * { min-width: 0; }
+    .module {
+      background: var(--surface);
+      border-radius: 24px;
+      padding: 22px 26px;
+      box-shadow: 0 20px 38px rgba(25, 30, 70, 0.08);
+      width: 100%;
+      box-sizing: border-box;
+    }
+    .module__header { display: flex; justify-content: space-between; align-items: center; margin-bottom: 20px; }
+    .module__title { margin: 0; font-size: 1.35rem; color: var(--text-strong); font-weight: 700; }
+    .module__subtitle { margin: 0; font-size: 0.9rem; color: var(--text-muted); margin-top: 8px; }
+    .module__link { font-size: 0.9rem; color: var(--primary); text-decoration: none; font-weight: 600; }
+
+    .ranking-card a { text-decoration: none; color: inherit; display: block; height: 100%; }
+    .ranking-card__thumb img { width: 100%; height: 100%; object-fit: contain; }
+
+    .trending-list { list-style: none; margin: 0; padding: 0; display: grid; gap: 6px; }
+    .trending-item { display: flex; align-items: center; gap: 12px; padding: 5px 10px; border-radius: 14px; background: #f0f4ff; transition: transform 0.15s ease, box-shadow 0.15s ease; }
+    .trending-item:hover { transform: translateX(4px); box-shadow: 0 12px 22px rgba(32, 61, 128, 0.12); }
+    .trending-rank { width: 34px; height: 34px; border-radius: 12px; background: rgba(15,76,255,0.12); color: var(--primary); display: inline-flex; align-items: center; justify-content: center; font-weight: 700; }
+    .trending-body { flex: 1; display: flex; flex-direction: column; gap: 2px; }
+    .trending-keyword { text-decoration: none; color: var(--text-strong); font-weight: 600; font-size: 0.85rem; line-height: 1.2; }
+    .trending-count { font-size: 0.85rem; color: var(--text-muted); }
+
+    .recent-carousel { position: relative; }
+    .recent-carousel__viewport {
+      overflow-x: auto;
+      overflow-y: hidden;
+      scroll-behavior: smooth;
+      scrollbar-width: none;
+    }
+    .recent-carousel__viewport::-webkit-scrollbar { display: none; }
+    .recent-grid { display: flex; gap: 16px; padding: 6px 4px 12px; scroll-snap-type: x mandatory; }
+    .recent-grid::-webkit-scrollbar { display: none; }
+    .recent-card { flex: 0 0 200px; scroll-snap-align: start; background: transparent; border-radius: 16px; padding: 14px;
+      display: flex; flex-direction: column; gap: 10px; box-shadow: 0 3px 16px rgba(15, 30, 65, 0.08);
+      transition: transform 0.15s ease, box-shadow 0.15s ease; margin-top: 15px;}
+    .recent-card:hover { transform: translateY(-3px); box-shadow: 0 3px 16px rgba(15, 30, 65, 0.08); }
+    .recent-card a { text-decoration: none; color: inherit; display: flex; flex-direction: column; gap: 10px; }
+    .recent-carousel__nav { position: absolute; inset: 0; display: flex; justify-content: space-between; align-items: center; pointer-events: none; }
+    .recent-carousel__btn { pointer-events: auto; width: 34px; height: 34px; border: none; border-radius: 50%; background: rgba(13, 25, 64, 0.12); color: var(--primary);
+      font-weight: 700; cursor: pointer; display: flex; align-items: center; justify-content: center; transition: background 0.2s ease, color 0.2s ease; }
+    .recent-carousel__btn:hover { background: #ffffff; }
+    .recent-carousel__btn[disabled] { opacity: 0.4; cursor: not-allowed; }
+    .recent-thumb { position: relative; width: 100%; padding-top: 140%; border-radius: 16px; overflow: hidden; }
+    .recent-thumb img { position: absolute; top: 50%; left: 50%; transform: translate(-50%, -50%); max-width: 100%; max-height: 100%; }
+    .recent-thumb span { position: absolute; top: 50%; left: 50%; transform: translate(-50%, -50%); font-size: 0.92rem; color: var(--text-muted); }
+    .recent-title { margin: 0; font-size: 0.94rem; font-weight: 700; color: var(--text-strong); }
+    .recent-meta { margin: 0; font-size: 0.8rem; color: var(--text-muted); }
+    .recent-author { margin: 0; font-size: 0.8rem; color: var(--text-muted); }
+    .recent-price { margin: 0; font-size: 0.8rem; font-weight: 700; color: var(--primary); }
+
+    .empty-state { text-align: center; background: var(--surface); border-radius: 24px; padding: 46px 24px; box-shadow: 0 18px 32px rgba(25, 32, 70, 0.08); color: var(--text-muted); }
+    .empty-state h2 { margin-bottom: 12px; font-size: 1.4rem; color: var(--text-strong); }
+
+
+    @media (max-width: 1024px) {
+      .hero { grid-template-columns: 1fr; }
+      .hero__best { order: -1; }
+      .modules { grid-template-columns: 1fr; }
+    }
+
+    @media (max-width: 720px) {
+      .home__inner { padding: 20px 16px 60px; }
+      .hero { padding: 32px 26px; }
+      .hero__title { font-size: 2rem; }
+      .hero__search button, .hero__search input { width: 100%; }
+      .hero-card__title { font-size: 0.95rem; }
+      .hero-card { flex: 0 0 100%; } /* 모바일 1장 */
+    }
+  </style>
+
+  <div class="home__inner">
+    <section class="hero">
+      <div class="hero__copy">
+        <span class="hero__badge">Monthly Pick · 베스트 업데이트</span>
+        <h1 class="hero__title">당신의 다음 한 권,<br> 지금 여기서 찾으세요.</h1>
+        <p class="hero__desc">
+          📖 당신의 독서 여정을 더욱 특별하게 만들어보세요.<br>
+          이번 달 가장 사랑받은 베스트셀러부터 지금 뜨거운 검색어까지,<br>
+          지금 이곳에서 새로운 영감을 줄 '다음 한 권'을 발견할 수 있습니다.
+        </p>
+        <div class="hero__action">
+          <a class="primary" th:href="@{/books}">전체 도서 둘러보기</a>
+        </div>
+      </div>
+
+      <!-- ===== 캐러셀 적용된 베스트셀러 영역 ===== -->
+      <div class="hero__best" th:if="${bestsellers != null and !#lists.isEmpty(bestsellers)}">
+        <div class="hero__best-header">
+          <h2 class="hero__best-title">월간 베스트셀러 TOP 5</h2>
+        </div>
+
+        <div class="carousel js-carousel">
+          <div class="carousel__viewport">
+            <ul class="hero__best-list js-carousel-track">
+              <!-- 최대 5개만 노출 -->
+              <li class="hero-card"
+                  th:each="row, iter : ${bestsellers}"
+                  th:if="${iter.index} < 5"
+                  th:with="book=${row[0]}, sold=${row[1]}">
+                <a th:href="@{|/books/${book.id}|}">
+                  <div class="hero-card__thumb">
+                    <img th:if="${book.imageUrl != null}" th:src="${book.imageUrl}" th:alt="${book.title}" />
+                    <span th:if="${book.imageUrl == null}" style="position:absolute;top:50%;left:50%;transform:translate(-50%, -50%);font-size:0.92rem;color:rgba(1,13,133,0.75);">이미지 준비 중</span>
+                  </div>
+                  <span class="hero-card__rank" th:text="${iter.index + 1}">1</span>
+                  <h3 class="hero-card__title" th:text="${book.title}">도서 제목</h3>
+                  <p class="hero-card__meta">
+                    <span class="meta-row">
+                      <span class="meta-label">저자</span>
+                      <span class="meta-value"
+                            th:text="${#lists.isEmpty(book.bookAuthors) ? '정보 없음' : #strings.listJoin(book.bookAuthors.?[author != null].![author.name], ', ')}">구병모</span>
+                    </span>
+                    <span class="meta-row">
+                      <span class="meta-label">출판사</span>
+                      <span class="meta-value" th:text="${book.publisher}">문학동네</span>
+                    </span>
+                  </p>
+                </a>
+              </li>
+            </ul>
+          </div>
+
+          <div class="carousel__nav">
+            <!-- 기존 <div class="carousel__nav"> … </div> 는 삭제 -->
+            <button class="carousel__btn carousel__btn--prev js-prev" type="button" aria-label="이전">←</button>
+            <button class="carousel__btn carousel__btn--next js-next" type="button" aria-label="다음">→</button>
+          </div>
+        </div>
+      </div>
+      <!-- ===== /캐러셀 영역 ===== -->
+    </section>
+
+    <div class="modules">
+      <section class="module" th:if="${recentBooks != null and !#lists.isEmpty(recentBooks)}">
+        <div class="module__header">
+          <div>
+            <h2 class="module__title">최근 본 도서</h2>
+            <p class="module__subtitle">최근 열람한 도서 5권을 한눈에 확인할 수 있습니다.</p>
+          </div>
+        </div>
+        <div class="recent-carousel js-recent-carousel">
+          <div class="recent-carousel__viewport">
+            <div class="recent-grid">
+              <article class="recent-card" th:each="book : ${recentBooks}">
+                <a th:href="@{|/books/${book.id}|}">
+                  <div class="recent-thumb">
+                    <img th:if="${book.imageUrl != null}" th:src="${book.imageUrl}" th:alt="${book.title}" />
+                    <span th:if="${book.imageUrl == null}">이미지 준비 중</span>
+                  </div>
+                  <h3 class="recent-title" th:text="${book.title}">도서 제목</h3>
+                  <p class="recent-meta" th:text="'출판사 ' + ${book.publisher}">출판사</p>
+                  <p class="recent-author" th:text="'저자 ' + (${#lists.isEmpty(book.bookAuthors) ? '정보 없음' : #strings.listJoin(book.bookAuthors.?[author != null].![author.name], ', ')})">저자</p>
+                  <p class="recent-price" th:if="${book.price != null}"
+                     th:text="${#numbers.formatDecimal(book.price, 0, 'COMMA', 0, 'POINT')} + '원'">0원</p>
+                </a>
+              </article>
+            </div>
+          </div>
+          <div class="recent-carousel__nav" th:if="${#lists.size(recentBooks)} > 1">
+            <button class="recent-carousel__btn js-recent-prev" type="button" aria-label="최근 도서 이전">←</button>
+            <button class="recent-carousel__btn js-recent-next" type="button" aria-label="최근 도서 다음">→</button>
+          </div>
+        </div>
+      </section>
+      <aside class="module" th:if="${topKeywords != null and !#lists.isEmpty(topKeywords)}">
+        <div class="module__header" style="margin-bottom:16px;">
+          <div>
+            <h2 class="module__title">실시간 인기 검색어</h2>
+            <p class="module__subtitle">Top 10</p>
+          </div>
+        </div>
+        <ol class="trending-list">
+          <li class="trending-item" th:each="kw, iter : ${topKeywords}">
+            <span class="trending-rank" th:text="${iter.index + 1}">1</span>
+            <div class="trending-body">
+              <a class="trending-keyword" th:href="@{/books(field='all', keyword=${kw.keyword})}"
+                 th:text=${kw.keyword}>샘플 키워드</a>
+            </div>
+          </li>
+        </ol>
+      </aside>
+    </div>
+  </div>
+
+  <script>
+    (function () {
+      const root = document.querySelector('.js-carousel');
+      if (!root) return;
+
+      const viewport = root.querySelector('.carousel__viewport');
+      const track = root.querySelector('.js-carousel-track');
+      const prevBtn = root.querySelector('.js-prev');
+      const nextBtn = root.querySelector('.js-next');
+
+      const STEP = 1;            // 한번에 1장
+      const PER_VIEW = 1;        // 화면에 1장만 중앙
+      let gap = 0;               // CSS gap(px)
+      let cardWidth = 0;         // 카드 폭(px)
+      let viewportWidth = 0;
+      let animating = false;
+
+      // 무한루프용 상태
+      let originals = [];        // 원본 슬라이드 노드 목록
+      let clonesLeft = 0;        // 좌측에 복제한 개수(= originals.length)
+      let clonesRight = 0;       // 우측에 복제한 개수(= originals.length)
+      let index = 0;             // 트랙 상의 "현재 활성 인덱스" (좌측 클론 포함 기준)
+
+      // ---------- 측정 & 정렬 ----------
+      function measure() {
+        viewportWidth = viewport.getBoundingClientRect().width;
+
+        const styles = window.getComputedStyle(track);
+        const gapValue = styles.gap || styles.columnGap || '0';
+        gap = Number.parseFloat(gapValue) || 0;
+
+        const firstCard = track.querySelector(':scope > *');
+        cardWidth = firstCard ? firstCard.getBoundingClientRect().width : viewportWidth;
+
+        // 중앙 정렬용 좌우 패딩 갱신
+        const sidePad = Math.max((viewportWidth - cardWidth) / 2, 0);
+        track.style.setProperty('--side-pad', sidePad + 'px');
+      }
+
+      // index번째 아이템을 중앙에 오게 transform
+      function goTo(_index, withTransition = true) {
+        index = _index;
+        const offset = -(index * (cardWidth + gap)); // 좌측 padding은 CSS로 보정됨
+        track.style.transition = withTransition ? 'transform 320ms ease' : 'none';
+        track.style.transform = `translate3d(${offset}px, 0, 0)`;
+      }
+
+      // 경계 통과 시(클론 구간) 원본으로 순간 이동
+      function normalizeIndex() {
+        const totalOriginals = originals.length;
+        const firstReal = clonesLeft;                         // 첫 원본의 인덱스
+        const lastReal = clonesLeft + totalOriginals - 1;     // 마지막 원본의 인덱스
+
+        if (index > lastReal) {
+          // 오른쪽 끝 넘어감 → 같은 상대 위치의 원본으로 점프
+          const diff = index - lastReal - 1; // 넘친 만큼
+          index = firstReal + diff;
+          goTo(index, false);
+        } else if (index < firstReal) {
+          // 왼쪽 끝 넘어감 → 같은 상대 위치의 원본으로 점프
+          const diff = firstReal - index;
+          index = lastReal - diff + 1;
+          goTo(index, false);
+        }
+      }
+
+      // ---------- 액션 ----------
+      function slideNext() {
+        if (animating) return;
+        animating = true;
+        measure();
+
+        goTo(index + STEP, true);
+
+        const onEnd = () => {
+          track.removeEventListener('transitionend', onEnd);
+          // 경계 보정(순간 점프)
+          normalizeIndex();
+          animating = false;
+        };
+        track.addEventListener('transitionend', onEnd, { once: true });
+      }
+
+      function slidePrev() {
+        if (animating) return;
+        animating = true;
+        measure();
+
+        goTo(index - STEP, true);
+
+        const onEnd = () => {
+          track.removeEventListener('transitionend', onEnd);
+          // 경계 보정(순간 점프)
+          normalizeIndex();
+          animating = false;
+        };
+        track.addEventListener('transitionend', onEnd, { once: true });
+      }
+
+      // ---------- 초기화 ----------
+      function initClones() {
+        originals = Array.from(track.children); // 원본만 먼저 가져옴
+        const fragLeft = document.createDocumentFragment();
+        const fragRight = document.createDocumentFragment();
+
+        // 오른쪽에 원본 전체 복제
+        originals.forEach((node) => {
+          fragRight.appendChild(node.cloneNode(true));
+        });
+        // 왼쪽에도 원본 전체 복제(역순 아님: 순서 유지)
+        originals.forEach((node) => {
+          fragLeft.appendChild(node.cloneNode(true));
+        });
+
+        track.insertBefore(fragLeft, track.firstChild);
+        track.appendChild(fragRight);
+
+        clonesLeft = originals.length;
+        clonesRight = originals.length;
+      }
+
+      function updateControls() {
+        // 무한 캐러셀이라 버튼 disable 불필요. 필요하면 조건 로직 추가 가능.
+        prevBtn.removeAttribute('disabled');
+        nextBtn.removeAttribute('disabled');
+      }
+
+      function init() {
+        initClones();    // 앞뒤 복제
+        measure();
+        updateControls();
+
+        // 시작 인덱스: "첫 원본"이 중앙에 오도록
+        index = clonesLeft; // 원본 첫 번째의 인덱스
+        goTo(index, false);
+
+        // 자동 슬라이드 (원하면 주석 해제)
+        setInterval(() => { if (!animating) slideNext(); }, 3000);
+
+        // 이벤트
+        nextBtn.addEventListener('click', slideNext);
+        prevBtn.addEventListener('click', slidePrev);
+
+        window.addEventListener('resize', () => {
+          const curr = index;  // 현재 인덱스 기억
+          measure();
+          goTo(curr, false);   // 같은 인덱스를 새로운 측정값으로 재배치
+        });
+      }
+
+      init();
+    })();
+
+    (function () {
+      const root = document.querySelector('.js-recent-carousel');
+      if (!root) return;
+
+      const viewport = root.querySelector('.recent-carousel__viewport');
+      const track = root.querySelector('.recent-grid');
+      const prevBtn = root.querySelector('.js-recent-prev');
+      const nextBtn = root.querySelector('.js-recent-next');
+
+      if (!viewport || !track || track.children.length === 0) return;
+
+      function getStep() {
+        const card = track.querySelector('.recent-card');
+        if (!card) return viewport.clientWidth;
+        const styles = window.getComputedStyle(track);
+        const gap = parseFloat(styles.columnGap || styles.gap || '0') || 0;
+        return card.getBoundingClientRect().width + gap;
+      }
+
+      function updateButtons() {
+        if (!prevBtn || !nextBtn) return;
+        const maxScroll = viewport.scrollWidth - viewport.clientWidth - 1;
+        const current = viewport.scrollLeft;
+
+        if (maxScroll <= 0) {
+          prevBtn.setAttribute('disabled', 'true');
+          nextBtn.setAttribute('disabled', 'true');
+          return;
+        }
+
+        if (current <= 0) {
+          prevBtn.setAttribute('disabled', 'true');
+        } else {
+          prevBtn.removeAttribute('disabled');
+        }
+
+        if (current >= maxScroll) {
+          nextBtn.setAttribute('disabled', 'true');
+        } else {
+          nextBtn.removeAttribute('disabled');
+        }
+      }
+
+      function scrollByStep(direction) {
+        const step = getStep();
+        viewport.scrollBy({ left: step * direction, behavior: 'smooth' });
+      }
+
+      nextBtn?.addEventListener('click', () => scrollByStep(1));
+      prevBtn?.addEventListener('click', () => scrollByStep(-1));
+
+      viewport.addEventListener('scroll', () => {
+        window.requestAnimationFrame(updateButtons);
+      });
+      window.addEventListener('resize', updateButtons);
+
+      updateButtons();
+    })();
+  </script>
+
+</section>
+</html>
