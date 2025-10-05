@@ -10,6 +10,8 @@ import org.springframework.stereotype.Controller;
 import org.springframework.ui.Model;
 import org.springframework.web.bind.annotation.GetMapping;
 
+import java.util.Collections;
+
 @Controller
 @RequiredArgsConstructor
 public class HomeController {
@@ -23,6 +25,7 @@ public class HomeController {
         model.addAttribute("bestsellers", bookRankingService.getMonthlyBestsellers());
         model.addAttribute("topKeywords", searchKeywordService.getTopKeywords());
 
+        model.addAttribute("recentBooks", Collections.emptyList());
         if (principal != null) {
             model.addAttribute("recentBooks", recentBookService.getRecentBooks(principal.userId()));
         }
