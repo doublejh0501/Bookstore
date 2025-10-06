@@ -20,4 +20,7 @@ public interface RecentBookRepository extends JpaRepository<RecentBook, Long> {
     //특정 책 본 사용자 조회
     List<RecentBook> findByBook_Id(Long bookId);
 
+    //사용자별 최근 본 책( id 내림차순으로 최근 저장된 것부터)
+    List<RecentBook> findByUser_IdOrderByIdDesc(Long userId);
+
 }

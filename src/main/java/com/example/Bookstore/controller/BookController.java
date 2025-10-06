@@ -1,10 +1,13 @@
 package com.example.Bookstore.controller;
 
 import com.example.Bookstore.domain.book.Book;
+import com.example.Bookstore.security.jwt.JwtPrincipal;
 import com.example.Bookstore.service.BookService;
+import com.example.Bookstore.service.RecentBookService;
 import lombok.RequiredArgsConstructor;
 import org.springframework.data.domain.Page;
 import org.springframework.data.domain.PageRequest;
+import org.springframework.security.core.annotation.AuthenticationPrincipal;
 import org.springframework.stereotype.Controller;
 import org.springframework.ui.Model;
 import org.springframework.web.bind.annotation.*;
@@ -16,6 +19,7 @@ import org.springframework.web.bind.annotation.*;
 public class BookController {
 
     private final BookService bookService;
+    private final RecentBookService recentBookService;
 
     //전체 : /books
     //특정 카테고리 : /books?categoryId=3
@@ -74,10 +78,15 @@ public class BookController {
     }
 
     @GetMapping("/{id}")
-    public String getBookDetail(@PathVariable Long id, Model model) {
+    public String getBookDetail(@PathVariable Long id,
+                                @AuthenticationPrincipal JwtPrincipal principal,
+                                Model model) {
+        if(principal != null) {
+            recentBookService.recordRecentBook(principal.userId(), id);
+        }
+
         Book book = bookService.getBookById(id);
         model.addAttribute("book", book);
         return "book/detail";
-
     }
 }

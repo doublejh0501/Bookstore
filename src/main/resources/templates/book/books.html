@@ -127,7 +127,7 @@
     }
 
     .book-price {
-      margin-top: auto;
+      margin-top: 20px;
       font-size: 15px;
       font-weight: 700;
       color: var(--secondary-color);
@@ -311,7 +311,7 @@
           </div>
 
           <div class="book-price" th:if="${book.price != null}">
-            <span th:text="${#numbers.formatInteger(book.price, 0)}">0</span>원
+            <span th:text="${#numbers.formatInteger(book.price, 3, 'COMMA')}">0</span>원
           </div>
           </a>
 

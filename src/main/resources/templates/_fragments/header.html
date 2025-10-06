@@ -95,7 +95,7 @@
       <div class="header-logo"><a th:href="@{/}">BookStore</a></div>
 
       <div class="header-search">
-        <form th:action="@{/books}" method="get">
+        <form th:action="@{/search/track}" method="get">
           <!-- 🔽 커스텀 드롭다운 -->
           <div class="custom-select" id="fieldSelect">
             <button type="button" class="custom-select__trigger" aria-haspopup="listbox" aria-expanded="false">
@@ -123,8 +123,8 @@
       </div>
 
       <nav class="header-links">
-        <a th:href="@{/cart}">장바구니</a>
-        <a th:href="@{/mypage/orders}">마이페이지</a>
+        <a sec:authorize="isAuthenticated()" th:href="@{/cart}">장바구니</a>
+        <a sec:authorize="isAuthenticated()" th:href="@{/mypage/orders}">마이페이지</a>
         <a sec:authorize="isAnonymous()" th:href="@{/login}">로그인</a>
         <form sec:authorize="isAuthenticated()"
               th:action="@{/logout}" method="post" class="logout-form">

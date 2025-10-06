@@ -21,6 +21,11 @@ public class JwtAuthenticationEntryPoint implements AuthenticationEntryPoint {
   @Override
   public void commence(HttpServletRequest request, HttpServletResponse response, AuthenticationException authException)
       throws IOException, ServletException {
+    if (expectsHtml(request)) {
+      response.sendRedirect("/login");
+      return;
+    }
+
     response.setStatus(HttpServletResponse.SC_UNAUTHORIZED);
     response.setContentType(MediaType.APPLICATION_JSON_VALUE);
 
@@ -38,5 +43,14 @@ public class JwtAuthenticationEntryPoint implements AuthenticationEntryPoint {
     body.put("status", HttpServletResponse.SC_UNAUTHORIZED);
 
     OBJECT_MAPPER.writeValue(response.getOutputStream(), body);
+  }
+
+  private boolean expectsHtml(HttpServletRequest request) {
+    String accept = request.getHeader("Accept");
+    if (accept != null && accept.contains(MediaType.TEXT_HTML_VALUE)) {
+      return true;
+    }
+    String requestedWith = request.getHeader("X-Requested-With");
+    return accept == null && requestedWith == null && "GET".equalsIgnoreCase(request.getMethod());
   }
 }
