@@ -1,4 +1,6 @@
 spring:
+  config:
+    import: "optional:file:.env[.properties]" # 프로젝트 루트의 .env를 프로퍼티로 가져옵니다
   datasource:
     url: jdbc:mysql://localhost:3307/bookstore?useSSL=false&allowPublicKeyRetrieval=true&serverTimezone=UTC&characterEncoding=UTF-8
     username: bookstore
@@ -90,3 +92,4 @@ kakaopay:
   approval-url: ${KAKAOPAY_APPROVAL_URL:http://localhost:8080/payments/kakao/approve}
   cancel-url: ${KAKAOPAY_CANCEL_URL:http://localhost:8080/payments/kakao/cancel}
   fail-url: ${KAKAOPAY_FAIL_URL:http://localhost:8080/payments/kakao/fail}
+  enabled: ${KAKAOPAY_ENABLED:false}

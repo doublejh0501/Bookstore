@@ -1,47 +1,120 @@
 <!DOCTYPE html>
 <html lang="ko" xmlns:th="http://www.thymeleaf.org"
       th:replace="_fragments/layout :: layout(~{::section}, '장바구니')">
-<section th:fragment="content">
-  <h1>장바구니</h1>
+<section th:fragment="content" class="cart-page">
+  <style>
+    :root {
+      --primary: #0046ff;
+      --primary-dark: #1737c2;
+      --muted: #64748b;
+      --text: #1f2d3d;
+      --bg: #f6f8fb;
+      --card: #fff;
+      --border: #e5e8eb;
+    }
+    .cart-page { background: var(--bg); min-height: 100vh; padding: 32px 0 48px; }
+    .cart-container { max-width: 1100px; margin: 0 auto; padding: 0 24px; display: grid; grid-template-columns: 1fr 320px; gap: 24px; }
+    @media (max-width: 992px) { .cart-container { grid-template-columns: 1fr; } }
+    .cart-header { margin-bottom: 8px; }
+    .cart-header h1 { margin: 0 0 8px; font-size: 28px; font-weight: 800; color: var(--text); }
+    .cart-header p { margin: 0; color: var(--muted); font-size: 14px; }
+    .cart-list { background: var(--card); border: 1px solid var(--border); border-radius: 18px; box-shadow: 0 12px 32px rgba(15,30,65,.06); }
+    .cart-item { display: grid; grid-template-columns: 96px 1fr auto; gap: 18px; padding: 18px 22px; border-bottom: 1px solid rgba(229,232,235,.7); align-items: center; }
+    .cart-item:last-child { border-bottom: none; }
+    .thumb { width: 96px; height: 128px; border-radius: 12px; overflow: hidden; background: #f1f5f9; display: flex; align-items: center; justify-content: center; }
+    .thumb img { width:100%; height:100%; object-fit: cover; }
+    .thumb .ph { width:100%; height:100%; display:flex; align-items:center; justify-content:center; font-size:12px; color:var(--muted); border:1px dashed var(--border); background:#fff; }
+    .info { display:flex; flex-direction:column; gap:8px; }
+    .title { margin:0; font-size:18px; font-weight:700; color:var(--text); }
+    .meta { display:flex; gap:12px; color:var(--muted); font-size:13px; }
+    .right { display:flex; align-items:center; gap:16px; }
+    .price { font-size:18px; font-weight:800; color:var(--text); min-width: 110px; text-align: right; }
+    .qty { display:flex; align-items:center; gap:8px; }
+    .qty button { width:32px; height:32px; border-radius:8px; border:1px solid var(--border); background:#fff; cursor:pointer; }
+    .remove button { border:1px solid #e11d48; color:#e11d48; background:#fff; border-radius:8px; padding:8px 10px; cursor:pointer; }
+    .summary { background: var(--card); border: 1px solid var(--border); border-radius: 18px; box-shadow: 0 12px 32px rgba(15,30,65,.06); padding: 20px; position: sticky; top: 24px; }
+    .summary h2 { margin: 0 0 12px; font-size: 18px; font-weight: 800; color: var(--text); }
+    .summary .row { display:flex; align-items:center; justify-content:space-between; margin:8px 0; color:var(--muted); }
+    .summary .total { font-size: 22px; font-weight: 800; color: var(--text); margin-top: 10px; }
+    .summary .checkout { margin-top: 16px; width:100%; height:48px; border-radius:12px; background:var(--primary); color:#fff; border:0; font-weight:700; cursor:pointer; }
+    .summary .checkout:hover { background: var(--primary-dark); }
+    .empty { background:#fff; border-radius:18px; border:1px dashed var(--border); padding:60px 24px; text-align:center; color:var(--muted); font-size:15px; box-shadow: 0 10px 26px rgba(15,30,65,.06); }
+    .flash { margin: 0 0 12px; padding: 10px 12px; border-radius: 10px; background: rgba(0,70,255,.08); color: var(--primary-dark); border:1px solid rgba(0,70,255,.2); font-size: 14px; }
+    .cart-actions { display:flex; justify-content:flex-end; gap:12px; margin: 12px 0 16px; }
+    .checkout-primary { height:44px; padding:0 18px; border-radius:12px; background:var(--primary); color:#fff; border:0; font-weight:700; cursor:pointer; }
+    .checkout-primary:hover { background: var(--primary-dark); }
+    .checkout-primary:disabled { opacity:.5; cursor:not-allowed; }
+  </style>
 
-  <form method="post" th:action="@{/cart/update}">
-    <table>
-      <thead>
-      <tr>
-        <th><input type="checkbox" id="selectAll" onclick="document.querySelectorAll('.sel').forEach(c=>c.checked=this.checked)"></th>
-        <th>상품</th>
-        <th>단가</th>
-        <th>수량</th>
-        <th>소계</th>
-        <th>삭제</th>
-      </tr>
-      </thead>
-      <tbody>
-      <tr th:each="i : ${items}">
-        <td><input class="sel" type="checkbox" name="selected" th:value="${i.id}" /></td>
-        <td>
-          <a th:href="@{|/products/${i.productId}|}" th:text="${i.productName}">책</a>
-        </td>
-        <td th:text="${#numbers.formatInteger(i.unitPrice,3,'COMMA')}">0</td>
-        <td>
-          <button formaction="/cart/dec" formmethod="post" th:name="${'_id'}" th:value="${i.id}">-</button>
-          <span th:text="${i.quantity}">1</span>
-          <button formaction="/cart/inc" formmethod="post" th:name="${'_id'}" th:value="${i.id}">+</button>
-        </td>
-        <td th:text="${#numbers.formatInteger(i.subtotal,3,'COMMA')}">0</td>
-        <td>
-          <button formaction="/cart/remove" formmethod="post" th:name="${'_id'}" th:value="${i.id}">삭제</button>
-        </td>
-      </tr>
-      <tr th:if="${#lists.isEmpty(items)}"
-          th:replace="_fragments/table-empty :: emptyRow(6, '장바구니가 비어 있습니다.')"></tr>
-      </tbody>
-    </table>
-    <input type="hidden" th:if="${_csrf != null}" th:name="${_csrf.parameterName}" th:value="${_csrf.token}" />
-  </form>
+  <div class="cart-container">
+    <div>
+      <header class="cart-header">
+        <h1>장바구니</h1>
+        <p>담아두신 도서를 확인하고 수량을 조절하세요.</p>
+      </header>
 
-  <form th:action="@{/checkout}" method="get">
-    <button type="submit">선택 주문</button>
-  </form>
+      <div class="cart-actions">
+        <form th:action="@{/checkout}" method="get">
+          <button class="checkout-primary" type="submit" th:disabled="${#lists.isEmpty(items)}">결제하기</button>
+        </form>
+      </div>
+
+      <div th:if="${message}" class="flash" th:text="${message}">알림</div>
+
+      <div class="cart-list" th:if="${!#lists.isEmpty(items)}">
+        <article class="cart-item" th:each="i : ${items}">
+          <div class="thumb">
+            <a th:href="@{|/books/${i.productId}|}">
+              <div class="ph">이미지</div>
+            </a>
+          </div>
+          <div class="info">
+            <h3 class="title"><a th:href="@{|/books/${i.productId}|}" th:text="${i.productName}">도서</a></h3>
+            <div class="meta">
+              <span th:text="|개당 ${#numbers.formatDecimal(i.unitPrice,1,'COMMA',0,'POINT')}원|">0원</span>
+            </div>
+          </div>
+          <div class="right">
+            <div class="qty">
+              <form th:action="@{/cart/dec}" method="post">
+                <input type="hidden" name="_id" th:value="${i.id}" />
+                <input type="hidden" th:if="${_csrf != null}" th:name="${_csrf.parameterName}" th:value="${_csrf.token}" />
+                <button type="submit">-</button>
+              </form>
+              <strong th:text="${i.quantity}">1</strong>
+              <form th:action="@{/cart/inc}" method="post">
+                <input type="hidden" name="_id" th:value="${i.id}" />
+                <input type="hidden" th:if="${_csrf != null}" th:name="${_csrf.parameterName}" th:value="${_csrf.token}" />
+                <button type="submit">+</button>
+              </form>
+            </div>
+            <div class="price" th:text="|${#numbers.formatDecimal(i.subtotal,1,'COMMA',0,'POINT')}원|">0원</div>
+            <div class="remove">
+              <form th:action="@{/cart/remove}" method="post">
+                <input type="hidden" name="_id" th:value="${i.id}" />
+                <input type="hidden" th:if="${_csrf != null}" th:name="${_csrf.parameterName}" th:value="${_csrf.token}" />
+                <button type="submit">삭제</button>
+              </form>
+            </div>
+          </div>
+        </article>
+      </div>
+
+      <div class="empty" th:if="${#lists.isEmpty(items)}">
+        장바구니가 비어 있습니다. 마음에 드는 책을 담아보세요!
+      </div>
+    </div>
+
+    <aside class="summary">
+      <h2>주문 요약</h2>
+      <div class="row"><span>상품 합계</span>
+        <span th:text="${#numbers.formatDecimal(cartTotal,1,'COMMA',0,'POINT')}">0</span></div>
+      <div class="row"><span>배송비</span><span>0</span></div>
+      <div class="total" th:text="|총 합계 ${#numbers.formatDecimal(cartTotal,1,'COMMA',0,'POINT')}원|">총 합계 0원</div>
+      <form th:action="@{/checkout}" method="get">
+        <button class="checkout" type="submit" th:disabled="${#lists.isEmpty(items)}">결제하기</button>
+      </form>
+    </aside>
+  </div>
 </section>
 </html>

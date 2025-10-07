@@ -5,6 +5,7 @@ import com.example.Bookstore.domain.order.OrderStatus;
 import com.example.Bookstore.domain.order.OrderItem;
 import com.example.Bookstore.domain.book.Book;
 import com.example.Bookstore.security.jwt.JwtPrincipal;
+import com.example.Bookstore.repository.payment.PaymentRepository;
 import com.example.Bookstore.service.order.OrderService;
 import java.math.BigDecimal;
 import java.time.LocalDateTime;
@@ -16,6 +17,8 @@ import org.springframework.security.core.annotation.AuthenticationPrincipal;
 import org.springframework.stereotype.Controller;
 import org.springframework.ui.Model;
 import org.springframework.web.bind.annotation.GetMapping;
+import org.springframework.web.bind.annotation.PathVariable;
+import org.springframework.web.bind.annotation.PostMapping;
 import org.springframework.web.bind.annotation.RequestMapping;
 
 @Controller
@@ -23,13 +26,15 @@ import org.springframework.web.bind.annotation.RequestMapping;
 public class MyOrderController {
 
   private final OrderService orderService;
+  private final PaymentRepository paymentRepository;
 
   private static final Comparator<Order> CREATED_AT_DESC =
       Comparator.comparing(Order::getCreatedAt, Comparator.nullsLast(Comparator.naturalOrder()))
           .reversed();
 
-  public MyOrderController(OrderService orderService) {
+  public MyOrderController(OrderService orderService, PaymentRepository paymentRepository) {
     this.orderService = Objects.requireNonNull(orderService, "orderService 는 null 일 수 없습니다");
+    this.paymentRepository = Objects.requireNonNull(paymentRepository, "paymentRepository 는 null 일 수 없습니다");
   }
 
   @GetMapping
@@ -46,6 +51,49 @@ public class MyOrderController {
     model.addAttribute("myOrders", myOrders);
     return "user/my-orders";
   }
+
+  @GetMapping("/{id}")
+  public String myOrderDetail(
+      @PathVariable("id") Long orderId,
+      @AuthenticationPrincipal JwtPrincipal principal,
+      Model model) {
+    if (principal == null) {
+      return "redirect:/login";
+    }
+    Order order = orderService.getUserOrderDetail(principal.userId(), orderId);
+
+    // Build item views
+    List<OrderItemView> items = order.getItems() == null ? List.of() : order.getItems().stream()
+        .map(this::toItemView)
+        .toList();
+
+    // Simple shipment model using user's address (no Shipment entity yet)
+    record ShipmentView(String address) {}
+    ShipmentView shipment = new ShipmentView(order.getUser() != null ? order.getUser().getAddress() : null);
+
+    model.addAttribute("order", new OrderDetail(order.getId(), isCancelable(order)));
+    model.addAttribute("orderItems", items);
+    model.addAttribute("shipment", shipment);
+    model.addAttribute("payment", paymentRepository.findByOrderId(order.getId()).orElse(null));
+    return "user/my-order-detail";
+  }
+
+  @PostMapping("/{id}/cancel")
+  public String cancelOrder(
+      @PathVariable("id") Long orderId,
+      @AuthenticationPrincipal JwtPrincipal principal) {
+    if (principal == null) {
+      return "redirect:/login";
+    }
+    orderService.cancelOrder(principal.userId(), orderId);
+    return "redirect:/mypage/orders/" + orderId;
+  }
+
+  private boolean isCancelable(Order order) {
+    return order.getStatus() == OrderStatus.PENDING || order.getStatus() == OrderStatus.PAID;
+  }
+
+  public record OrderDetail(Long id, boolean cancelable) {}
 
   private OrderView toView(Order order) {
     LocalDateTime createdAt = order.getCreatedAt();

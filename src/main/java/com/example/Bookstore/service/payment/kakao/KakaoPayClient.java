@@ -23,8 +23,12 @@ public class KakaoPayClient {
   private final RestTemplate restTemplate = new RestTemplate();
 
   public ReadyResponse ready(ReadyRequest req) {
-    String url = UriComponentsBuilder.fromHttpUrl(props.getApiBase())
-        .path("/online/v1/payment/ready")
+    String base = props.getApiBase();
+    String readyPath = (base != null && base.contains("kapi.kakao.com"))
+        ? "/v1/payment/ready"
+        : "/online/v1/payment/ready";
+    String url = UriComponentsBuilder.fromHttpUrl(base)
+        .path(readyPath)
         .toUriString();
 
     HttpHeaders headers = authHeaders();
@@ -53,8 +57,12 @@ public class KakaoPayClient {
   }
 
   public ApproveResponse approve(ApproveRequest req) {
-    String url = UriComponentsBuilder.fromHttpUrl(props.getApiBase())
-        .path("/online/v1/payment/approve")
+    String base = props.getApiBase();
+    String approvePath = (base != null && base.contains("kapi.kakao.com"))
+        ? "/v1/payment/approve"
+        : "/online/v1/payment/approve";
+    String url = UriComponentsBuilder.fromHttpUrl(base)
+        .path(approvePath)
         .toUriString();
 
     HttpHeaders headers = authHeaders();
@@ -73,9 +81,18 @@ public class KakaoPayClient {
 
   private HttpHeaders authHeaders() {
     HttpHeaders headers = new HttpHeaders();
-    // New KakaoPay Open API uses SECRET_KEY scheme
-    headers.set("Authorization", "SECRET_KEY " + props.getSecretKey());
-    headers.set("KA-CLIENT-ID", props.getClientId());
+    // Choose header scheme by API base:
+    // - open-api.kakaopay.com → Authorization: SECRET_KEY <secret>, KA-CLIENT-ID: <clientId>
+    // - kapi.kakao.com        → Authorization: KakaoAK <admin_key>
+    String base = props.getApiBase() == null ? "" : props.getApiBase();
+    if (base.contains("kapi.kakao.com")) {
+      headers.set("Authorization", "KakaoAK " + props.getSecretKey());
+    } else {
+      headers.set("Authorization", "SECRET_KEY " + props.getSecretKey());
+      if (props.getClientId() != null && !props.getClientId().isBlank()) {
+        headers.set("KA-CLIENT-ID", props.getClientId());
+      }
+    }
     return headers;
   }
 

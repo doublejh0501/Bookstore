@@ -24,6 +24,9 @@ public class KakaoPayProperties {
   private String cancelUrl = "http://localhost:8080/payments/kakao/cancel";
   private String failUrl = "http://localhost:8080/payments/kakao/fail";
 
+  /** Feature flag: enable/disable actual payment calls. Default disabled for dev. */
+  private boolean enabled = false;
+
   public String getClientId() { return clientId; }
   public void setClientId(String clientId) { this.clientId = clientId; }
 
@@ -44,5 +47,7 @@ public class KakaoPayProperties {
 
   public String getFailUrl() { return failUrl; }
   public void setFailUrl(String failUrl) { this.failUrl = failUrl; }
-}
 
+  public boolean isEnabled() { return enabled; }
+  public void setEnabled(boolean enabled) { this.enabled = enabled; }
+}

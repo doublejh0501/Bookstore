@@ -1,38 +1,75 @@
 <!DOCTYPE html>
 <html lang="ko" xmlns:th="http://www.thymeleaf.org"
       th:replace="_fragments/layout :: layout(~{::section}, '주문 결제')">
-<section th:fragment="content">
-  <h1>주문 결제</h1>
+<section th:fragment="content" class="checkout-page">
+  <style>
+    :root {
+      --primary: #0046ff;
+      --primary-dark: #1737c2;
+      --muted: #64748b;
+      --text: #1f2d3d;
+      --bg: #f6f8fb;
+      --card: #fff;
+      --border: #e5e8eb;
+    }
+    .checkout-page { background: var(--bg); min-height: 100vh; padding: 32px 0 48px; }
+    .checkout-container { max-width: 1100px; margin: 0 auto; padding: 0 24px; display: grid; grid-template-columns: 1fr 360px; gap: 24px; }
+    @media (max-width: 992px) { .checkout-container { grid-template-columns: 1fr; } }
+    .panel { background: var(--card); border:1px solid var(--border); border-radius:18px; box-shadow: 0 12px 32px rgba(15,30,65,.06); padding: 20px; }
+    .panel h2 { margin:0 0 12px; font-size:18px; font-weight:800; color:var(--text); }
+    .form-grid { display:grid; grid-template-columns: 1fr 1fr; gap: 12px; }
+    .form-grid .full { grid-column: 1 / -1; }
+    .input { width:100%; height:44px; border-radius:10px; border:1px solid var(--border); padding: 0 12px; box-sizing:border-box; }
+    .select { width:100%; height:44px; border-radius:10px; border:1px solid var(--border); padding: 0 12px; background:#fff; }
+    .agree { font-size:14px; color:var(--muted); }
+    .summary .row { display:flex; align-items:center; justify-content:space-between; margin:8px 0; color:var(--muted); }
+    .summary .total { font-size:22px; font-weight:800; color:var(--text); margin-top:10px; }
+    .pay { margin-top: 16px; width:100%; height:48px; border-radius:12px; background:var(--primary); color:#fff; border:0; font-weight:700; cursor:pointer; }
+    .pay:hover { background: var(--primary-dark); }
+    .title { margin: 0 0 14px; font-size: 28px; font-weight: 800; color: var(--text); }
+  </style>
 
-  <form th:action="@{/payments/kakao/ready}" method="post">
-    <fieldset>
-      <legend>배송지</legend>
-      <input type="text" name="receiver" placeholder="수령인" th:value="${checkout?.receiver}" required />
-      <input type="text" name="address" placeholder="주소" th:value="${checkout?.address}" required />
-      <input type="tel" name="phone" placeholder="연락처" th:value="${checkout?.phone}" />
-    </fieldset>
+  <div class="checkout-container">
+    <div th:if="${param.notice}">
+      <div class="panel" style="margin-bottom:14px; border-color: rgba(0,70,255,.2); background: rgba(0,70,255,.06); color:#1737c2;">
+        <strong th:text="${param.notice}">안내</strong>
+      </div>
+    </div>
+    <div>
+      <h1 class="title">주문 결제</h1>
 
-    <fieldset>
-      <legend>결제수단</legend>
-      <select name="method" disabled>
-        <option value="KAKAOPAY" selected>카카오페이</option>
-      </select>
-      <small>현재 카카오페이만 지원합니다.</small>
-    </fieldset>
+      <div class="panel">
+        <h2>배송지</h2>
+        <div class="form-grid">
+          <input class="input" type="text" name="receiver" placeholder="수령인" th:value="${checkout?.receiver}" />
+          <input class="input" type="tel" name="phone" placeholder="연락처" th:value="${checkout?.phone}" />
+          <input class="input full" type="text" name="address" placeholder="주소" th:value="${checkout?.address}" />
+        </div>
+      </div>
 
-    <fieldset>
-      <legend>약관동의</legend>
-      <label><input type="checkbox" name="agree" required /> 개인정보 수집/이용 동의</label>
-    </fieldset>
+      <div class="panel" style="margin-top:14px;">
+        <h2>결제수단</h2>
+        <select class="select" name="method" disabled>
+          <option value="KAKAOPAY" selected>카카오페이</option>
+        </select>
+        <div class="agree" style="margin-top:10px;">
+          <label><input type="checkbox" name="agree" required /> 개인정보 수집/이용 동의</label>
+        </div>
+      </div>
+    </div>
 
-    <section>
+    <aside class="panel summary">
       <h2>주문 요약</h2>
-      <div th:text="${#numbers.formatInteger(totalPrice,3,'COMMA')}">0</div>
-    </section>
-
-    <input type="hidden" th:if="${_csrf != null}" th:name="${_csrf.parameterName}" th:value="${_csrf.token}" />
-    <input type="hidden" name="userId" value="1" />
-    <button type="submit">카카오페이로 결제</button>
-  </form>
+      <div class="row"><span>상품 합계</span>
+        <span th:text="${#numbers.formatDecimal(totalPrice ?: 0,1,'COMMA',0,'POINT')}">0</span></div>
+      <div class="row"><span>배송비</span><span>0</span></div>
+      <div class="total" th:text="|총 합계 ${#numbers.formatDecimal(totalPrice ?: 0,1,'COMMA',0,'POINT')}원|">총 합계 0원</div>
+      <form th:action="@{/payments/kakao/ready}" method="post">
+        <input type="hidden" th:if="${_csrf != null}" th:name="${_csrf.parameterName}" th:value="${_csrf.token}" />
+        <input type="hidden" name="userId" th:value="${userId}" />
+        <button class="pay" type="submit">카카오페이로 결제</button>
+      </form>
+    </aside>
+  </div>
 </section>
 </html>
