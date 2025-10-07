@@ -12,6 +12,7 @@ import org.springframework.boot.autoconfigure.security.servlet.PathRequest; // �
 import org.springframework.context.annotation.Bean; // 빈 등록용 어노테이션
 import org.springframework.context.annotation.Configuration; // 구성 클래스 선언
 import org.springframework.security.authentication.AuthenticationManager; // AuthenticationManager Bean
+import org.springframework.http.HttpMethod; // HTTP method matching
 import org.springframework.security.authentication.ProviderManager; // DaoAuthenticationProvider 를 감싸는 매니저
 import org.springframework.security.authentication.dao.DaoAuthenticationProvider; // UserDetailsService 기반 인증 제공자
 import org.springframework.security.config.annotation.web.builders.HttpSecurity; // SecurityFilterChain 구성에 사용
@@ -63,7 +64,8 @@ public class SecurityConfig {
             .requestMatchers(
                 "/", "/login", "/signup", "/signup/**", "/password/**",
                 "/error", "/error/**", "/css/**", "/js/**", "/images/**",
-                "/csrf-token", "/books/**").permitAll()
+                "/csrf-token", "/books/**", "/payments/kakao/**").permitAll()
+            .requestMatchers(HttpMethod.GET, "/cart").permitAll()
             .requestMatchers("/admin/**").hasRole("ADMIN")
             .anyRequest().authenticated())
         .formLogin(form -> form.disable())

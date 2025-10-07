@@ -316,16 +316,20 @@
           </a>
 
           <div class="book-actions">
-            <button type="button"
-                    class="book-button"
-                    th:attr="data-book-id=${book.id}"
-                    th:if="${book.id != null}">장바구니에 담기</button>
+            <form th:if="${book.id != null}" th:action="@{/cart}" method="post" style="display:inline;">
+              <input type="hidden" name="bookId" th:value="${book.id}" />
+              <input type="hidden" name="qty" value="1" />
+              <input type="hidden" th:if="${_csrf != null}" th:name="${_csrf.parameterName}" th:value="${_csrf.token}" />
+              <button type="submit" class="book-button">장바구니에 담기</button>
+            </form>
             <button type="button" class="book-button" disabled th:unless="${book.id != null}">장바구니에 담기</button>
 
-            <button type="button"
-                    class="book-button book-button--primary"
-                    th:attr="data-book-id=${book.id}"
-                    th:if="${book.id != null}">바로구매</button>
+            <form th:if="${book.id != null}" th:action="@{/checkout}" method="post" style="display:inline;">
+              <input type="hidden" name="bookId" th:value="${book.id}" />
+              <input type="hidden" name="qty" value="1" />
+              <input type="hidden" th:if="${_csrf != null}" th:name="${_csrf.parameterName}" th:value="${_csrf.token}" />
+              <button type="submit" class="book-button book-button--primary">바로구매</button>
+            </form>
             <button type="button" class="book-button book-button--primary" disabled th:unless="${book.id != null}">바로구매</button>
           </div>
         </li>

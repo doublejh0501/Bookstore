@@ -42,5 +42,8 @@ public interface BookRepository extends JpaRepository<Book, Long> {
             String title, String author, String publisher, Pageable pageable
     );
 
+    // 인벤토리 레코드가 아직 없는 도서 조회
+    List<Book> findByInventoryIsNull();
+
 
 }
