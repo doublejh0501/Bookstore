@@ -20,21 +20,22 @@ public class RecentBookService {
     private final UserRepository userRepository;
     private final BookRepository bookRepository;
 
-    //RecentBook 중복 체크
+    // 최근 본 도서 기록: 기존 항목이 있으면 삭제 후 다시 저장해서 항상 최신 순 유지
     public void recordRecentBook(Long userId, Long bookId){
-        if(!recentBookRepository.existsByUser_IdAndBook_Id(userId, bookId)){
-            var user = userRepository.findById(userId)
-                    .orElseThrow(() -> new IllegalArgumentException("사용자 없음 : " + userId));
-            var book = bookRepository.findById(bookId)
-                    .orElseThrow(() -> new IllegalArgumentException("책 없음 : " + bookId));
+        var user = userRepository.findById(userId)
+                .orElseThrow(() -> new IllegalArgumentException("사용자 없음 : " + userId));
+        var book = bookRepository.findById(bookId)
+                .orElseThrow(() -> new IllegalArgumentException("책 없음 : " + bookId));
 
-            recentBookRepository.save(
-                    RecentBook.builder()
-                            .user(user)
-                            .book(book)
-                            .build()
-            );
-        }
+        recentBookRepository.findByUser_IdAndBook_Id(userId, bookId)
+                .ifPresent(recentBookRepository::delete);
+
+        recentBookRepository.save(
+                RecentBook.builder()
+                        .user(user)
+                        .book(book)
+                        .build()
+        );
     }
 
     //5개만 조회하기
