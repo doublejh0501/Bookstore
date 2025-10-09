@@ -1,0 +1,60 @@
+<!DOCTYPE html>
+<html lang="ko" xmlns:th="http://www.thymeleaf.org"
+      th:replace="_fragments/layout :: layout(~{::section}, '관리자 홈')">
+<section th:fragment="content" class="admin-page">
+  <style>
+    :root { --primary:#0046ff; --primary-dark:#1737c2; --text:#1f2d3d; --muted:#64748b; --bg:#f6f8fb; --card:#fff; --border:#e5e8eb; }
+    .admin-page { background: var(--bg); min-height:100vh; padding: 24px 0 40px; }
+    .admin-container { max-width: 1100px; margin:0 auto; padding:0 24px; display:flex; flex-direction:column; gap:16px; }
+    h1 { margin:0 0 6px; font-size:26px; font-weight:800; color:var(--text); }
+    .grid { display:grid; grid-template-columns: repeat(auto-fit, minmax(240px,1fr)); gap:16px; }
+    .card { background:var(--card); border:1px solid var(--border); border-radius:16px; padding:18px; box-shadow: 0 10px 26px rgba(15,30,65,.06); display:flex; flex-direction:column; gap:10px; }
+    .card h3 { margin:0; font-size:18px; font-weight:800; color:var(--text); }
+    .card p { margin:0; color:var(--muted); font-size:14px; }
+    .actions { display:flex; gap:10px; flex-wrap:wrap; }
+    .btn { display:inline-flex; align-items:center; justify-content:center; height:36px; padding:0 14px; border-radius:10px; border:1px solid var(--border); background:#fff; color:var(--text); text-decoration:none; font-weight:700; }
+    .btn-primary { background:var(--primary); border-color:var(--primary); color:#fff; }
+    .btn:hover { background:#f3f5f9; }
+    .btn-primary:hover { background:var(--primary-dark); }
+  </style>
+
+  <div class="admin-container">
+    <h1>관리자</h1>
+    <div class="grid">
+      <article class="card">
+        <h3>상품 관리</h3>
+        <p>상품을 조회하고 신규 상품을 등록합니다.</p>
+        <div class="actions">
+          <a class="btn" th:href="@{/admin/products}">상품 조회</a>
+          <a class="btn btn-primary" th:href="@{/admin/products/new}">상품 등록</a>
+        </div>
+      </article>
+
+      <article class="card">
+        <h3>주문 관리</h3>
+        <p>주문 목록을 조회하고 상태를 변경합니다.</p>
+        <div class="actions">
+          <a class="btn btn-primary" th:href="@{/admin/orders}">주문 조회</a>
+        </div>
+      </article>
+
+      <article class="card">
+        <h3>회원 관리</h3>
+        <p>회원 목록과 상세 정보를 확인합니다.</p>
+        <div class="actions">
+          <a class="btn btn-primary" th:href="@{/admin/members}">회원 조회</a>
+        </div>
+      </article>
+
+      <article class="card">
+        <h3>재고 관리</h3>
+        <p>상품 재고 현황을 확인합니다.</p>
+        <div class="actions">
+          <a class="btn btn-primary" th:href="@{/admin/inventory}">재고 조회</a>
+        </div>
+      </article>
+    </div>
+  </div>
+</section>
+</html>
+

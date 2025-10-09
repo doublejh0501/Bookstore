@@ -1,34 +1,85 @@
 <!DOCTYPE html>
 <html lang="ko" xmlns:th="http://www.thymeleaf.org"
       th:replace="_fragments/layout :: layout(~{::section}, '재고 조회')">
-<section th:fragment="content">
-  <h1>재고 조회</h1>
+<section th:fragment="content" class="admin-page">
+  <style>
+    :root { --primary:#0046ff; --text:#1f2d3d; --muted:#64748b; --bg:#f6f8fb; --card:#fff; --border:#e5e8eb; }
+    .admin-page { background: var(--bg); min-height:100vh; padding: 24px 0 40px; }
+    .admin-container { max-width: 1100px; margin:0 auto; padding:0 24px; display:flex; flex-direction:column; gap:16px; }
+    h1 { margin:0 0 6px; font-size:26px; font-weight:800; color:var(--text); }
+    .toolbar { display:flex; justify-content:flex-end; align-items:center; gap:10px; }
+    .toolbar .size-select { height:36px; border:1px solid var(--border); border-radius:10px; padding:0 10px; }
+    .table-card { background:var(--card); border:1px solid var(--border); border-radius:14px; overflow:hidden; }
+    table { width:100%; border-collapse:collapse; }
+    th, td { padding:12px 14px; border-bottom:1px solid rgba(229,232,235,.7); text-align:left; }
+    thead th { background:rgba(243,244,246,.66); font-weight:700; color:#374151; }
+  </style>
 
-  <table>
-    <thead>
-    <tr>
-      <th>상품</th>
-      <th>ISBN</th>
-      <th>재고수량</th>
-      <th>안전재고</th>
-      <th>판매상태</th>
-      <th>최근입출고일</th>
-    </tr>
-    </thead>
-    <tbody>
-    <tr th:each="r : ${items}">
-      <td th:text="${r.productName}">-</td>
-      <td th:text="${r.isbn}">-</td>
-      <td th:text="${r.quantity}">0</td>
-      <td th:text="${r.safetyStock}">0</td>
-      <td th:text="${r.saleStatus}">ON_SALE</td>
-      <td th:text="${#temporals.format(r.lastMovementAt,'yyyy-MM-dd')}">-</td>
-    </tr>
-    <tr th:if="${#lists.isEmpty(items)}"
-        th:replace="_fragments/table-empty :: emptyRow(6, '재고 데이터가 없습니다.')"></tr>
-    </tbody>
-  </table>
+  <div class="admin-container">
+    <h1>재고 조회</h1>
 
-  <div th:replace="_fragments/pagianation :: pager(${page}, ${pageSize}, ${totalPages})"></div>
+    <form th:action="@{/admin/inventory}" method="get" class="filter-bar" style="grid-template-columns: repeat(4, 1fr);">
+      <div>
+        <label for="q">검색(제목/저자/출판사)</label>
+        <input id="q" name="q" type="text" th:value="${q}" placeholder="키워드" />
+      </div>
+      <div>
+        <label for="from">등록 시작일</label>
+        <input id="from" name="from" type="date" th:value="${from}" />
+      </div>
+      <div>
+        <label for="to">등록 종료일</label>
+        <input id="to" name="to" type="date" th:value="${to}" />
+      </div>
+      <div class="filter-actions" style="grid-column: span 4;">
+        <button class="btn" type="reset" onclick="this.form.querySelectorAll('input').forEach(e=>{ if(e.type!=='hidden'){ e.value=''; } });">초기화</button>
+        <button class="btn btn-primary" type="submit">검색</button>
+      </div>
+    </form>
+    <div class="toolbar">
+      <form th:action="@{/admin/inventory}" method="get">
+        <input type="hidden" name="q" th:value="${q}" />
+        <input type="hidden" name="from" th:value="${from}" />
+        <input type="hidden" name="to" th:value="${to}" />
+        <input type="hidden" name="sort" th:value="${param.sort}" />
+        <select class="size-select" name="size" onchange="this.form.submit()">
+          <option th:selected="${pageSize == 30}" value="30">30개</option>
+          <option th:selected="${pageSize == 50}" value="50">50개</option>
+          <option th:selected="${pageSize == 100}" value="100">100개</option>
+        </select>
+      </form>
+    </div>
+
+    <div class="table-card">
+      <table>
+        <thead>
+        <tr>
+          <th><a th:href="@{/admin/inventory(sort=${'book.title,' + (${param.sort?.contains('book.title,asc')} ? 'desc' : 'asc')}, q=${q}, from=${from}, to=${to}, size=${pageSize})}">상품</a></th>
+          <th>ISBN</th>
+          <th><a th:href="@{/admin/inventory(sort=${'quantity,' + (${param.sort?.contains('quantity,asc')} ? 'desc' : 'asc')}, q=${q}, from=${from}, to=${to}, size=${pageSize})}">재고수량</a></th>
+          <th>안전재고</th>
+          <th>판매상태</th>
+          <th><a th:href="@{/admin/inventory(sort=${'book.price,' + (${param.sort?.contains('book.price,asc')} ? 'desc' : 'asc')}, q=${q}, from=${from}, to=${to}, size=${pageSize})}">가격</a></th>
+          <th><a th:href="@{/admin/inventory(sort=${'book.createdAt,' + (${param.sort?.contains('book.createdAt,asc')} ? 'desc' : 'asc')}, q=${q}, from=${from}, to=${to}, size=${pageSize})}">등록일</a></th>
+        </tr>
+        </thead>
+        <tbody>
+        <tr th:each="r : ${items}">
+          <td th:text="${r.productName}">-</td>
+          <td th:text="${r.isbn}">-</td>
+          <td th:text="${r.quantity}">0</td>
+          <td th:text="${r.safetyStock}">0</td>
+          <td th:text="${r.saleStatus}">ON_SALE</td>
+          <td th:text="${#numbers.formatInteger(r.price, 3, 'COMMA')}">0</td>
+          <td th:text="${#temporals.format(r.lastMovementAt,'yyyy-MM-dd')}">-</td>
+        </tr>
+        <tr th:if="${#lists.isEmpty(items)}"
+            th:replace="_fragments/table-empty :: emptyRow(6, '재고 데이터가 없습니다.')"></tr>
+        </tbody>
+      </table>
+    </div>
+
+    <div th:replace="_fragments/pagianation :: pager(${page}, ${pageSize}, ${totalPages})"></div>
+  </div>
 </section>
 </html>

@@ -1,40 +1,126 @@
 <!DOCTYPE html>
 <html lang="ko" xmlns:th="http://www.thymeleaf.org"
       th:replace="_fragments/layout :: layout(~{::section}, '회원 목록')">
-<section th:fragment="content">
-  <h1>회원 목록</h1>
+<section th:fragment="content" class="admin-page">
+  <style>
+    :root { --primary:#0046ff; --text:#1f2d3d; --muted:#64748b; --bg:#f6f8fb; --card:#fff; --border:#e5e8eb; }
+    .admin-page { background: var(--bg); min-height:100vh; padding: 24px 0 40px; }
+    .admin-container { max-width: 1100px; margin:0 auto; padding:0 24px; display:flex; flex-direction:column; gap:16px; }
+    h1 { margin:0 0 6px; font-size:26px; font-weight:800; color:var(--text); }
+    .filter-bar { background:var(--card); border:1px solid var(--border); border-radius:14px; padding:12px; display:grid; grid-template-columns: 1fr; gap:10px; align-items:end; }
+    .filter-bar label { display:block; font-size:12px; color:var(--muted); margin:0 0 6px; }
+    .filter-bar input { width:100%; height:36px; border:1px solid var(--border); border-radius:8px; padding:0 10px; box-sizing:border-box; }
+    .filter-actions { display:flex; gap:8px; justify-content:flex-end; }
+    .btn { height:36px; padding:0 14px; border-radius:10px; border:1px solid var(--border); background:#fff; cursor:pointer; }
+    .btn-primary { background:var(--primary); color:#fff; border-color:var(--primary); }
+    .toolbar { display:flex; justify-content:flex-end; align-items:center; gap:10px; }
+    .toolbar .size-select { height:36px; border:1px solid var(--border); border-radius:10px; padding:0 10px; }
+    .table-card { background:var(--card); border:1px solid var(--border); border-radius:14px; overflow:hidden; }
+    table { width:100%; border-collapse:collapse; }
+    th, td { padding:12px 14px; border-bottom:1px solid rgba(229,232,235,.7); text-align:left; }
+    thead th { background:rgba(243,244,246,.66); font-weight:700; color:#374151; }
+  </style>
 
-  <div th:replace="_fragments/search-bar :: basic(@{/admin/members}, 'q', 'memberStatus')"></div>
+  <div class="admin-container">
+    <h1>회원 목록</h1>
 
-  <table>
-    <thead>
-    <tr>
-      <th>회원ID</th>
-      <th>이름</th>
-      <th>이메일</th>
-      <th>연락처</th>
-      <th>회원등급</th>
-      <th>상태</th>
-      <th>가입일</th>
-      <th>관리</th>
-    </tr>
-    </thead>
-    <tbody>
-    <tr th:each="m : ${items}">
-      <td th:text="${m.id}">-</td>
-      <td th:text="${m.name}">-</td>
-      <td th:text="${m.email}">-</td>
-      <td th:text="${m.phone}">-</td>
-      <td th:text="${m.grade}">-</td>
-      <td th:text="${m.status}">ACTIVE</td>
-      <td th:text="${#temporals.format(m.joinedAt,'yyyy-MM-dd')}">-</td>
-      <td><a th:href="@{|/admin/members/${m.id}|}">상세</a></td>
-    </tr>
-    <tr th:if="${#lists.isEmpty(items)}"
-        th:replace="_fragments/table-empty :: emptyRow(8, '회원이 없습니다.')"></tr>
-    </tbody>
-  </table>
+    <form class="filter-bar" th:action="@{/admin/members}" method="get" style="grid-template-columns: repeat(6, 1fr);">
+      <div>
+        <label for="id">회원ID</label>
+        <input id="id" name="id" type="number" min="1" th:value="${id}" />
+      </div>
+      <div>
+        <label for="name">이름</label>
+        <input id="name" name="name" type="text" th:value="${name}" />
+      </div>
+      <div>
+        <label for="email">이메일</label>
+        <input id="email" name="email" type="text" th:value="${email}" />
+      </div>
+      <div>
+        <label for="grade">등급</label>
+        <select id="grade" name="grade">
+          <option value="" th:selected="${grade == null || grade == ''}">전체</option>
+          <option value="BASIC" th:selected="${grade == 'BASIC'}">BASIC</option>
+          <option value="SILVER" th:selected="${grade == 'SILVER'}">SILVER</option>
+          <option value="GOLD" th:selected="${grade == 'GOLD'}">GOLD</option>
+          <option value="PLATINUM" th:selected="${grade == 'PLATINUM'}">PLATINUM</option>
+        </select>
+      </div>
+      <div>
+        <label for="status">상태</label>
+        <select id="status" name="status">
+          <option value="" th:selected="${status == null || status == ''}">전체</option>
+          <option value="ACTIVE" th:selected="${status == 'ACTIVE'}">ACTIVE</option>
+          <option value="INACTIVE" th:selected="${status == 'INACTIVE'}">INACTIVE</option>
+          <option value="DORMANT" th:selected="${status == 'DORMANT'}">DORMANT</option>
+          <option value="WITHDRAWN" th:selected="${status == 'WITHDRAWN'}">WITHDRAWN</option>
+        </select>
+      </div>
+      <div>
+        <label for="from">가입 시작일</label>
+        <input id="from" name="from" type="date" th:value="${from}" />
+      </div>
+      <div>
+        <label for="to">가입 종료일</label>
+        <input id="to" name="to" type="date" th:value="${to}" />
+      </div>
+      <div class="filter-actions" style="grid-column: span 6;">
+        <button class="btn" type="reset" onclick="this.form.querySelectorAll('input').forEach(e=>{ if(e.type!=='hidden'){ e.value=''; } });">초기화</button>
+        <button class="btn btn-primary" type="submit">검색</button>
+      </div>
+    </form>
 
-  <div th:replace="_fragments/pagianation :: pager(${page}, ${pageSize}, ${totalPages})"></div>
+    <div class="toolbar">
+      <form th:action="@{/admin/members}" method="get">
+        <input type="hidden" name="id" th:value="${id}" />
+        <input type="hidden" name="name" th:value="${name}" />
+        <input type="hidden" name="email" th:value="${email}" />
+        <input type="hidden" name="status" th:value="${status}" />
+        <input type="hidden" name="grade" th:value="${grade}" />
+        <input type="hidden" name="from" th:value="${from}" />
+        <input type="hidden" name="to" th:value="${to}" />
+        <input type="hidden" name="sort" th:value="${param.sort}" />
+        <select class="size-select" name="size" onchange="this.form.submit()">
+          <option th:selected="${pageSize == 30}" value="30">30개</option>
+          <option th:selected="${pageSize == 50}" value="50">50개</option>
+          <option th:selected="${pageSize == 100}" value="100">100개</option>
+        </select>
+      </form>
+    </div>
+
+    <div class="table-card">
+      <table>
+        <thead>
+        <tr>
+          <th><a th:href="@{/admin/members(sort=${'id,' + (${param.sort?.contains('id,asc')} ? 'desc' : 'asc')}, id=${id}, name=${name}, email=${email}, status=${status}, grade=${grade}, from=${from}, to=${to}, size=${pageSize})}">회원ID</a></th>
+          <th><a th:href="@{/admin/members(sort=${'name,' + (${param.sort?.contains('name,asc')} ? 'desc' : 'asc')}, id=${id}, name=${name}, email=${email}, status=${status}, grade=${grade}, from=${from}, to=${to}, size=${pageSize})}">이름</a></th>
+          <th>이메일</th>
+          <th>연락처</th>
+          <th>회원등급</th>
+          <th>상태</th>
+          <th><a th:href="@{/admin/members(sort=${'createdAt,' + (${param.sort?.contains('createdAt,asc')} ? 'desc' : 'asc')}, id=${id}, name=${name}, email=${email}, status=${status}, grade=${grade}, from=${from}, to=${to}, size=${pageSize})}">가입일</a></th>
+          <th>관리</th>
+        </tr>
+        </thead>
+        <tbody>
+        <tr th:each="m : ${items}">
+          <td th:text="${m.id}">-</td>
+          <td th:text="${m.name}">-</td>
+          <td th:text="${m.email}">-</td>
+          <td th:text="${m.phone}">-</td>
+          <td th:text="${m.grade}">-</td>
+          <td th:text="${m.status}">ACTIVE</td>
+          <td th:text="${#temporals.format(m.joinedAt,'yyyy-MM-dd')}">-</td>
+          <td><a th:href="@{|/admin/members/${m.id}|}">상세</a></td>
+        </tr>
+        <tr th:if="${#lists.isEmpty(items)}"
+            th:replace="_fragments/table-empty :: emptyRow(8, '회원이 없습니다.')"></tr>
+        </tbody>
+      </table>
+    </div>
+
+    <div th:replace="_fragments/pagianation :: pager(${page}, ${pageSize}, ${totalPages})"></div>
+  </div>
 </section>
 </html>

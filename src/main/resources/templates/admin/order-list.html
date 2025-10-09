@@ -1,34 +1,112 @@
 <!DOCTYPE html>
 <html lang="ko" xmlns:th="http://www.thymeleaf.org"
       th:replace="_fragments/layout :: layout(~{::section}, '주문 목록')">
-<section th:fragment="content">
-  <h1>주문 목록</h1>
+<section th:fragment="content" class="admin-page">
+  <style>
+    :root { --primary:#0046ff; --text:#1f2d3d; --muted:#64748b; --bg:#f6f8fb; --card:#fff; --border:#e5e8eb; }
+    .admin-page { background: var(--bg); min-height:100vh; padding: 24px 0 40px; }
+    .admin-container { max-width: 1100px; margin:0 auto; padding:0 24px; display:flex; flex-direction:column; gap:16px; }
+    h1 { margin:0 0 6px; font-size:26px; font-weight:800; color:var(--text); }
+    .filter-bar { background:var(--card); border:1px solid var(--border); border-radius:14px; padding:12px; display:grid; grid-template-columns: repeat(6, 1fr); gap:10px; align-items:end; }
+    .filter-bar label { display:block; font-size:12px; color:var(--muted); margin:0 0 6px; }
+    .filter-bar input, .filter-bar select { width:100%; height:36px; border:1px solid var(--border); border-radius:8px; padding:0 10px; box-sizing:border-box; }
+    .filter-actions { grid-column: span 6; display:flex; gap:8px; justify-content:flex-end; }
+    .btn { height:36px; padding:0 14px; border-radius:10px; border:1px solid var(--border); background:#fff; cursor:pointer; }
+    .btn-primary { background:var(--primary); color:#fff; border-color:var(--primary); }
+    .table-card { background:var(--card); border:1px solid var(--border); border-radius:14px; overflow:hidden; }
+    table { width:100%; border-collapse:collapse; }
+    th, td { padding:12px 14px; border-bottom:1px solid rgba(229,232,235,.7); text-align:left; }
+    thead th { background:rgba(243,244,246,.66); font-weight:700; color:#374151; }
+    .toolbar { display:flex; justify-content:flex-end; align-items:center; gap:10px; }
+    .size-select { height:36px; border:1px solid var(--border); border-radius:10px; padding:0 10px; }
+  </style>
 
-  <table>
-    <thead>
-    <tr>
-      <th>주문번호</th>
-      <th>주문일</th>
-      <th>주문자</th>
-      <th>금액</th>
-      <th>상태</th>
-      <th>관리</th>
-    </tr>
-    </thead>
-    <tbody>
-    <tr th:each="o : ${items}">
-      <td th:text="${o.id}">1</td>
-      <td th:text="${#temporals.format(o.createdAt, 'yyyy-MM-dd HH:mm')}">-</td>
-      <td th:text="${o.memberId}">-</td>
-      <td th:text="${#numbers.formatInteger(o.totalPrice, 3, 'COMMA')}">0</td>
-      <td th:text="${o.status}">PENDING</td>
-      <td><a th:href="@{|/admin/orders/${o.id}|}">상세</a></td>
-    </tr>
-    <tr th:if="${#lists.isEmpty(items)}"
-        th:replace="_fragments/table-empty :: emptyRow(6, '주문이 없습니다.')"></tr>
-    </tbody>
-  </table>
+  <div class="admin-container">
+    <h1>주문 목록</h1>
 
-  <div th:replace="_fragments/pagianation :: pager(${page}, ${pageSize}, ${totalPages})"></div>
+    <form class="filter-bar" th:action="@{/admin/orders}" method="get">
+      <div>
+        <label for="userId">주문자 ID</label>
+        <input id="userId" name="userId" type="number" min="1" th:value="${userId}" />
+      </div>
+      <div>
+        <label for="status">상태</label>
+        <select id="status" name="status">
+          <option th:selected="${status == null || status == ''}" value="">전체</option>
+          <option th:selected="${status == 'PENDING'}">PENDING</option>
+          <option th:selected="${status == 'PAID'}">PAID</option>
+          <option th:selected="${status == 'SHIPPED'}">SHIPPED</option>
+          <option th:selected="${status == 'CANCELLED'}">CANCELLED</option>
+          <option th:selected="${status == 'REFUNDED'}">REFUNDED</option>
+        </select>
+      </div>
+      <div>
+        <label for="from">시작일</label>
+        <input id="from" name="from" type="date" th:value="${from}" />
+      </div>
+      <div>
+        <label for="to">종료일</label>
+        <input id="to" name="to" type="date" th:value="${to}" />
+      </div>
+      <div>
+        <label for="minTotal">최소금액</label>
+        <input id="minTotal" name="minTotal" type="number" min="0" step="1" th:value="${minTotal}" />
+      </div>
+      <div>
+        <label for="maxTotal">최대금액</label>
+        <input id="maxTotal" name="maxTotal" type="number" min="0" step="1" th:value="${maxTotal}" />
+      </div>
+      <div class="filter-actions">
+        <button class="btn" type="reset" onclick="this.form.querySelectorAll('input,select').forEach(e=>{ if(e.type!=='hidden'){ e.value=''; } });">초기화</button>
+        <button class="btn btn-primary" type="submit">검색</button>
+      </div>
+    </form>
+
+    <div class="toolbar">
+      <form th:action="@{/admin/orders}" method="get">
+        <input type="hidden" name="status" th:value="${status}" />
+        <input type="hidden" name="userId" th:value="${userId}" />
+        <input type="hidden" name="from" th:value="${from}" />
+        <input type="hidden" name="to" th:value="${to}" />
+        <input type="hidden" name="minTotal" th:value="${minTotal}" />
+        <input type="hidden" name="maxTotal" th:value="${maxTotal}" />
+        <input type="hidden" name="sort" th:value="${param.sort}" />
+        <select class="size-select" name="size" onchange="this.form.submit()">
+          <option th:selected="${pageSize == 30}" value="30">30개</option>
+          <option th:selected="${pageSize == 50}" value="50">50개</option>
+          <option th:selected="${pageSize == 100}" value="100">100개</option>
+        </select>
+      </form>
+    </div>
+
+    <div class="table-card">
+      <table>
+        <thead>
+        <tr>
+          <th>주문번호</th>
+          <th><a th:href="@{/admin/orders(sort=${'createdAt,' + (${param.sort?.contains('createdAt,asc')} ? 'desc' : 'asc')}, status=${status}, userId=${userId}, from=${from}, to=${to}, minTotal=${minTotal}, maxTotal=${maxTotal}, size=${pageSize})}">주문일</a></th>
+          <th><a th:href="@{/admin/orders(sort=${'user.id,' + (${param.sort?.contains('user.id,asc')} ? 'desc' : 'asc')}, status=${status}, userId=${userId}, from=${from}, to=${to}, minTotal=${minTotal}, maxTotal=${maxTotal}, size=${pageSize})}">주문자</a></th>
+          <th><a th:href="@{/admin/orders(sort=${'totalAmount,' + (${param.sort?.contains('totalAmount,asc')} ? 'desc' : 'asc')}, status=${status}, userId=${userId}, from=${from}, to=${to}, minTotal=${minTotal}, maxTotal=${maxTotal}, size=${pageSize})}">금액</a></th>
+          <th><a th:href="@{/admin/orders(sort=${'status,' + (${param.sort?.contains('status,asc')} ? 'desc' : 'asc')}, status=${status}, userId=${userId}, from=${from}, to=${to}, minTotal=${minTotal}, maxTotal=${maxTotal}, size=${pageSize})}">상태</a></th>
+          <th>관리</th>
+        </tr>
+        </thead>
+        <tbody>
+        <tr th:each="o : ${items}">
+          <td th:text="${o.id}">1</td>
+          <td th:text="${#temporals.format(o.createdAt, 'yyyy-MM-dd HH:mm')}">-</td>
+          <td th:text="${o.memberId}">-</td>
+          <td th:text="${#numbers.formatInteger(o.totalPrice, 3, 'COMMA')}">0</td>
+          <td th:text="${o.status}">PENDING</td>
+          <td><a th:href="@{|/admin/orders/${o.id}|}">상세</a></td>
+        </tr>
+        <tr th:if="${#lists.isEmpty(items)}"
+            th:replace="_fragments/table-empty :: emptyRow(6, '주문이 없습니다.')"></tr>
+        </tbody>
+      </table>
+    </div>
+
+    <div th:replace="_fragments/pagianation :: pager(${page}, ${pageSize}, ${totalPages})"></div>
+  </div>
 </section>
 </html>

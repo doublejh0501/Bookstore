@@ -3,11 +3,12 @@ package com.example.Bookstore.repository.order;
 import com.example.Bookstore.domain.order.Order;
 import com.example.Bookstore.domain.order.OrderStatus;
 import org.springframework.data.jpa.repository.JpaRepository;
+import org.springframework.data.jpa.repository.JpaSpecificationExecutor;
 
 import java.util.List;
 import java.util.Optional;
 
-public interface OrderRepository extends JpaRepository<Order, Long> {
+public interface OrderRepository extends JpaRepository<Order, Long>, JpaSpecificationExecutor<Order> {
 
     List<Order> findByUserId(Long userId);
 
@@ -19,4 +20,3 @@ public interface OrderRepository extends JpaRepository<Order, Long> {
 
     boolean existsByUserIdAndStatus(Long userId, OrderStatus status);
 }
-
