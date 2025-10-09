@@ -1,49 +1,121 @@
 <!DOCTYPE html>
 <html lang="ko" xmlns:th="http://www.thymeleaf.org"
       th:replace="_fragments/layout :: layout(~{::section}, '상품 목록')">
-<section th:fragment="content">
-  <h1>상품 목록</h1>
+<section th:fragment="content" class="admin-page">
+  <style>
+    :root { --primary:#0046ff; --text:#1f2d3d; --muted:#64748b; --bg:#f6f8fb; --card:#fff; --border:#e5e8eb; }
+    .admin-page { background: var(--bg); min-height:100vh; padding: 24px 0 40px; }
+    .admin-container { max-width: 1100px; margin:0 auto; padding:0 24px; display:flex; flex-direction:column; gap:16px; }
+    h1 { margin:0 0 6px; font-size:26px; font-weight:800; color:var(--text); }
+    .filter-bar { background:var(--card); border:1px solid var(--border); border-radius:14px; padding:12px; display:grid; grid-template-columns: 2fr 1fr 1fr; gap:10px; align-items:end; }
+    .filter-bar label { display:block; font-size:12px; color:var(--muted); margin:0 0 6px; }
+    .filter-bar input, .filter-bar select { width:100%; height:36px; border:1px solid var(--border); border-radius:8px; padding:0 10px; box-sizing:border-box; }
+    .filter-actions { grid-column: span 3; display:flex; gap:8px; justify-content:flex-end; }
+    .btn { height:36px; padding:0 14px; border-radius:10px; border:1px solid var(--border); background:#fff; cursor:pointer; }
+    .btn-primary { background:var(--primary); color:#fff; border-color:var(--primary); }
+    .toolbar { display:flex; justify-content:space-between; align-items:center; gap:10px; }
+    .toolbar .size-select { height:36px; border:1px solid var(--border); border-radius:10px; padding:0 10px; }
+    .table-card { background:var(--card); border:1px solid var(--border); border-radius:14px; overflow:hidden; }
+    table { width:100%; border-collapse:collapse; }
+    th, td { padding:12px 14px; border-bottom:1px solid rgba(229,232,235,.7); text-align:left; }
+    thead th { background:rgba(243,244,246,.66); font-weight:700; color:#374151; }
+  </style>
 
-  <div th:replace="_fragments/search-bar :: basic(@{/admin/products}, 'q', 'saleStatus')"></div>
+  <div class="admin-container">
+    <h1>상품 목록</h1>
 
-  <div style="margin: 8px 0">
-    <a th:href="@{/admin/products/new}">상품 등록</a>
+    <form class="filter-bar" th:action="@{/admin/products}" method="get">
+      <div>
+        <label for="q">검색(제목/저자/출판사)</label>
+        <input id="q" name="q" type="text" th:value="${q}" placeholder="키워드" />
+      </div>
+      <div>
+        <label for="saleStatus">판매상태</label>
+        <select id="saleStatus" name="saleStatus">
+          <option th:selected="${saleStatus == null || saleStatus == ''}" value="">전체</option>
+          <option value="ON_SALE" th:selected="${saleStatus == 'ON_SALE'}">판매중</option>
+          <option value="OUT_OF_PRINT" th:selected="${saleStatus == 'OUT_OF_PRINT'}">절판</option>
+          <option value="TEMP_SOLD_OUT" th:selected="${saleStatus == 'TEMP_SOLD_OUT'}">일시품절</option>
+          <option value="COMING_SOON" th:selected="${saleStatus == 'COMING_SOON'}">입고예정</option>
+        </select>
+      </div>
+      <div>
+        <label for="from">등록 시작일</label>
+        <input id="from" name="from" type="date" th:value="${from}" />
+      </div>
+      <div>
+        <label for="to">등록 종료일</label>
+        <input id="to" name="to" type="date" th:value="${to}" />
+      </div>
+      <div>
+        <label for="stockMin">최소 재고</label>
+        <input id="stockMin" name="stockMin" type="number" min="0" step="1" th:value="${stockMin}" />
+      </div>
+      <div>
+        <label for="stockMax">최대 재고</label>
+        <input id="stockMax" name="stockMax" type="number" min="0" step="1" th:value="${stockMax}" />
+      </div>
+      <div class="filter-actions">
+        <button class="btn" type="reset" onclick="this.form.querySelectorAll('input,select').forEach(e=>{ if(e.type!=='hidden'){ e.value=''; } });">초기화</button>
+        <button class="btn btn-primary" type="submit">검색</button>
+      </div>
+    </form>
+
+    <div class="toolbar">
+      <a class="btn" th:href="@{/admin/products/new}">상품 등록</a>
+      <form th:action="@{/admin/products}" method="get">
+        <input type="hidden" name="q" th:value="${q}" />
+        <input type="hidden" name="saleStatus" th:value="${saleStatus}" />
+        <input type="hidden" name="from" th:value="${from}" />
+        <input type="hidden" name="to" th:value="${to}" />
+        <input type="hidden" name="stockMin" th:value="${stockMin}" />
+        <input type="hidden" name="stockMax" th:value="${stockMax}" />
+        <input type="hidden" name="sort" th:value="${param.sort}" />
+        <select class="size-select" name="size" onchange="this.form.submit()">
+          <option th:selected="${pageSize == 30}" value="30">30개</option>
+          <option th:selected="${pageSize == 50}" value="50">50개</option>
+          <option th:selected="${pageSize == 100}" value="100">100개</option>
+        </select>
+      </form>
+    </div>
+
+    <div class="table-card">
+      <table>
+        <thead>
+        <tr>
+          <th>이미지</th>
+          <th><a th:href="@{/admin/products(sort=${'title,' + (${param.sort?.contains('title,asc')} ? 'desc' : 'asc')}, q=${q}, saleStatus=${saleStatus}, from=${from}, to=${to}, stockMin=${stockMin}, stockMax=${stockMax}, size=${pageSize})}">이름</a></th>
+          <th>저자</th>
+          <th>출판사</th>
+          <th><a th:href="@{/admin/products(sort=${'price,' + (${param.sort?.contains('price,asc')} ? 'desc' : 'asc')}, q=${q}, saleStatus=${saleStatus}, from=${from}, to=${to}, stockMin=${stockMin}, stockMax=${stockMax}, size=${pageSize})}">가격</a></th>
+          <th>재고</th>
+          <th>판매상태</th>
+          <th><a th:href="@{/admin/products(sort=${'createdAt,' + (${param.sort?.contains('createdAt,asc')} ? 'desc' : 'asc')}, q=${q}, saleStatus=${saleStatus}, from=${from}, to=${to}, stockMin=${stockMin}, stockMax=${stockMax}, size=${pageSize})}">등록일</a></th>
+          <th>관리</th>
+        </tr>
+        </thead>
+        <tbody>
+        <tr th:each="p : ${items}">
+          <td><img th:src="${p.thumbnail}" alt="thumb" width="40" height="56"/></td>
+          <td th:text="${p.name}">책 이름</td>
+          <td th:text="${p.author}">저자</td>
+          <td th:text="${p.publisher}">출판사</td>
+          <td th:text="${#numbers.formatInteger(p.price, 3, 'COMMA')}">0</td>
+          <td th:text="${p.stock}">0</td>
+          <td th:text="${p.saleStatus}">ON_SALE</td>
+          <td th:text="${#temporals.format(p.createdAt, 'yyyy-MM-dd')}">2025-01-01</td>
+          <td>
+            <a th:href="@{|/admin/products/${p.id}|}">상세</a>
+            <a th:href="@{|/admin/products/${p.id}/edit|}">수정</a>
+          </td>
+        </tr>
+        <tr th:if="${#lists.isEmpty(items)}"
+            th:replace="_fragments/table-empty :: emptyRow(9, '상품이 없습니다.')"></tr>
+        </tbody>
+      </table>
+    </div>
+
+    <div th:replace="_fragments/pagianation :: pager(${page}, ${pageSize}, ${totalPages})"></div>
   </div>
-
-  <table>
-    <thead>
-    <tr>
-      <th>이미지</th>
-      <th>이름</th>
-      <th>저자</th>
-      <th>출판사</th>
-      <th>가격</th>
-      <th>재고</th>
-      <th>판매상태</th>
-      <th>등록일</th>
-      <th>관리</th>
-    </tr>
-    </thead>
-    <tbody>
-    <tr th:each="p : ${items}">
-      <td><img th:src="${p.thumbnail}" alt="thumb" width="40" height="56"/></td>
-      <td th:text="${p.name}">책 이름</td>
-      <td th:text="${p.author}">저자</td>
-      <td th:text="${p.publisher}">출판사</td>
-      <td th:text="${#numbers.formatInteger(p.price, 3, 'COMMA')}">0</td>
-      <td th:text="${p.stock}">0</td>
-      <td th:text="${p.saleStatus}">ON_SALE</td>
-      <td th:text="${#temporals.format(p.createdAt, 'yyyy-MM-dd')}">2025-01-01</td>
-      <td>
-        <a th:href="@{|/admin/products/${p.id}|}">상세</a>
-        <a th:href="@{|/admin/products/${p.id}/edit|}">수정</a>
-      </td>
-    </tr>
-    <tr th:if="${#lists.isEmpty(items)}"
-        th:replace="_fragments/table-empty :: emptyRow(9, '상품이 없습니다.')"></tr>
-    </tbody>
-  </table>
-
-  <div th:replace="_fragments/pagianation :: pager(${page}, ${pageSize}, ${totalPages})"></div>
 </section>
 </html>
