@@ -1,4 +1,5 @@
 <!DOCTYPE html>
+<meta charset="UTF-8" />
 <html lang="ko" xmlns:th="http://www.thymeleaf.org"
       th:replace="_fragments/layout :: layout(~{::section}, '장바구니')">
 <section th:fragment="content" class="cart-page">
@@ -13,7 +14,7 @@
       --border: #e5e8eb;
     }
     .cart-page { background: var(--bg); min-height: 100vh; padding: 32px 0 48px; }
-    .cart-container { max-width: 1100px; margin: 0 auto; padding: 0 24px; display: grid; grid-template-columns: 1fr 320px; gap: 24px; }
+    .cart-container { align-items: start; max-width: 1100px; margin: 0 auto; padding: 0 24px; display: grid; grid-template-columns: 1fr 320px; gap: 24px; }
     @media (max-width: 992px) { .cart-container { grid-template-columns: 1fr; } }
     .cart-header { margin-bottom: 8px; }
     .cart-header h1 { margin: 0 0 8px; font-size: 28px; font-weight: 800; color: var(--text); }
@@ -26,13 +27,14 @@
     .thumb .ph { width:100%; height:100%; display:flex; align-items:center; justify-content:center; font-size:12px; color:var(--muted); border:1px dashed var(--border); background:#fff; }
     .info { display:flex; flex-direction:column; gap:8px; }
     .title { margin:0; font-size:18px; font-weight:700; color:var(--text); }
+    .title a { text-decoration : none; color: inherit;}
     .meta { display:flex; gap:12px; color:var(--muted); font-size:13px; }
     .right { display:flex; align-items:center; gap:16px; }
     .price { font-size:18px; font-weight:800; color:var(--text); min-width: 110px; text-align: right; }
     .qty { display:flex; align-items:center; gap:8px; }
     .qty button { width:32px; height:32px; border-radius:8px; border:1px solid var(--border); background:#fff; cursor:pointer; }
     .remove button { border:1px solid #e11d48; color:#e11d48; background:#fff; border-radius:8px; padding:8px 10px; cursor:pointer; }
-    .summary { background: var(--card); border: 1px solid var(--border); border-radius: 18px; box-shadow: 0 12px 32px rgba(15,30,65,.06); padding: 20px; position: sticky; top: 24px; }
+    .summary { margin-top: 65px; align-self: start; height: max-content; background: var(--card); border: 1px solid var(--border); border-radius: 18px; box-shadow: 0 12px 32px rgba(15,30,65,.06); padding: 20px; position: sticky; top: 24px; }
     .summary h2 { margin: 0 0 12px; font-size: 18px; font-weight: 800; color: var(--text); }
     .summary .row { display:flex; align-items:center; justify-content:space-between; margin:8px 0; color:var(--muted); }
     .summary .total { font-size: 22px; font-weight: 800; color: var(--text); margin-top: 10px; }
@@ -53,11 +55,7 @@
         <p>담아두신 도서를 확인하고 수량을 조절하세요.</p>
       </header>
 
-      <div class="cart-actions">
-        <form th:action="@{/checkout}" method="get">
-          <button class="checkout-primary" type="submit" th:disabled="${#lists.isEmpty(items)}">결제하기</button>
-        </form>
-      </div>
+
 
       <div th:if="${message}" class="flash" th:text="${message}">알림</div>
 
@@ -65,7 +63,10 @@
         <article class="cart-item" th:each="i : ${items}">
           <div class="thumb">
             <a th:href="@{|/books/${i.productId}|}">
-              <div class="ph">이미지</div>
+              <img th:if="${i.imageUrl != null && !#strings.isEmpty(i.imageUrl)}"
+                   th:src="${i.imageUrl}"
+                   th:alt="${i.productName}" />
+              <div class="ph" th:unless="${i.imageUrl != null && !#strings.isEmpty(i.imageUrl)}">이미지</div>
             </a>
           </div>
           <div class="info">

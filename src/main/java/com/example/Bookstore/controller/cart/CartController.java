@@ -157,16 +157,18 @@ public class CartController {
     var book = item.getBook();
     Long productId = book != null ? book.getId() : null;
     String productName = book != null ? book.getTitle() : "알 수 없는 도서";
+    String imageUrl = book != null ? book.getImageUrl() : null;
     BigDecimal unitPrice = (book != null && book.getPrice() != null) ? book.getPrice() : BigDecimal.ZERO;
     int quantity = item.getQuantity() == null ? 0 : item.getQuantity().intValue();
     BigDecimal subtotal = unitPrice.multiply(BigDecimal.valueOf(quantity));
-    return new ItemView(id, productId, productName, unitPrice, quantity, subtotal);
+    return new ItemView(id, productId, productName, imageUrl, unitPrice, quantity, subtotal);
   }
 
   public record ItemView(
       Long id,
       Long productId,
       String productName,
+      String imageUrl,
       BigDecimal unitPrice,
       int quantity,
       BigDecimal subtotal) {}
