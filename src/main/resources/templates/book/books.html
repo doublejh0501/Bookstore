@@ -134,23 +134,24 @@
     }
 
     .book-actions {
-      display: flex;
+      display: grid;
+      grid-template-columns: 1fr 1fr;
       gap: 8px;
       margin-top: 5px;
     }
     .book-button {
-      flex: 1;
-      display: inline-flex;
+      width: 100%;                           /* ✅ 그리드 셀 가로 꽉 채우기 */
+      height: 40px;
+      display: flex;                         /* ✅ 가운데 정렬 */
       align-items: center;
       justify-content: center;
-      height: 40px;
       border-radius: 8px;
       border: 1px solid var(--primary-color);
       font-size: 14px;
       font-weight: 600;
-      text-decoration: none;
       color: var(--primary-color);
       background: transparent;
+      text-decoration: none;
       cursor: pointer;
       transition: background-color .2s ease, color .2s ease, box-shadow .2s ease;
     }
