@@ -13,6 +13,14 @@
     table { width:100%; border-collapse:collapse; }
     th, td { padding:12px 14px; border-bottom:1px solid rgba(229,232,235,.7); text-align:left; }
     thead th { background:rgba(243,244,246,.66); font-weight:700; color:#374151; }
+
+    /* Missing styles for filter and buttons */
+    .filter-bar { background:var(--card); border:1px solid var(--border); border-radius:14px; padding:12px; display:grid; gap:10px; align-items:end; }
+    .filter-bar label { display:block; font-size:12px; color:var(--muted); margin:0 0 6px; }
+    .filter-bar input, .filter-bar select { width:100%; height:36px; border:1px solid var(--border); border-radius:8px; padding:0 10px; box-sizing:border-box; }
+    .filter-actions { display:flex; gap:8px; justify-content:flex-end; }
+    .btn { height:36px; padding:0 14px; border-radius:10px; border:1px solid var(--border); background:#fff; cursor:pointer; }
+    .btn-primary { background:var(--primary); color:#fff; border-color:var(--primary); }
   </style>
 
   <div class="admin-container">
@@ -74,7 +82,7 @@
           <td th:text="${#temporals.format(r.lastMovementAt,'yyyy-MM-dd')}">-</td>
         </tr>
         <tr th:if="${#lists.isEmpty(items)}"
-            th:replace="_fragments/table-empty :: emptyRow(6, '재고 데이터가 없습니다.')"></tr>
+            th:replace="_fragments/table-empty :: emptyRow(7, '재고 데이터가 없습니다.')"></tr>
         </tbody>
       </table>
     </div>

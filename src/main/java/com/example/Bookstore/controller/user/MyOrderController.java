@@ -72,6 +72,7 @@ public class MyOrderController {
     ShipmentView shipment = new ShipmentView(order.getUser() != null ? order.getUser().getAddress() : null);
 
     model.addAttribute("order", new OrderDetail(order.getId(), isCancelable(order)));
+    model.addAttribute("orderStatus", order.getStatus());
     model.addAttribute("orderItems", items);
     model.addAttribute("shipment", shipment);
     model.addAttribute("payment", paymentRepository.findByOrderId(order.getId()).orElse(null));
@@ -81,12 +82,14 @@ public class MyOrderController {
   @PostMapping("/{id}/cancel")
   public String cancelOrder(
       @PathVariable("id") Long orderId,
-      @AuthenticationPrincipal JwtPrincipal principal) {
+      @AuthenticationPrincipal JwtPrincipal principal,
+      org.springframework.web.servlet.mvc.support.RedirectAttributes ra) {
     if (principal == null) {
       return "redirect:/login";
     }
     orderService.cancelOrder(principal.userId(), orderId);
-    return "redirect:/mypage/orders/" + orderId;
+    ra.addFlashAttribute("notice", "주문이 취소되었습니다.");
+    return "redirect:/mypage/orders";
   }
 
   private boolean isCancelable(Order order) {

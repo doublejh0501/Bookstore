@@ -5,6 +5,7 @@ import com.example.Bookstore.domain.book.Inventory;
 import com.example.Bookstore.domain.book.SaleStatus;
 import com.example.Bookstore.repository.book.BookRepository;
 import com.example.Bookstore.repository.book.InventoryRepository;
+import com.example.Bookstore.repository.book.BookSpecifications;
 import jakarta.persistence.EntityNotFoundException;
 import java.math.BigDecimal;
 import java.time.LocalDateTime;
@@ -48,68 +49,34 @@ public class AdminProductController {
       Model model) {
 
     Page<Book> page;
-    Map<Long, Long> stockMap = new HashMap<>();
-    try {
-      // 정렬만 DB에 위임하고, 필터는 메모리에서 수행 (for-loop)
-      List<Book> allSorted = bookRepository.findAll(pageable.getSort());
+    Map<Long, Long> stockMap;
 
-    // 인벤토리 맵 선로딩
-    stockMap = inventoryRepository.findAll().stream()
+    java.time.LocalDate fromDate = null, toDate = null;
+    try { if (from != null && !from.isBlank()) fromDate = java.time.LocalDate.parse(from); } catch (Exception ignore) {}
+    try { if (to != null && !to.isBlank()) toDate = java.time.LocalDate.parse(to); } catch (Exception ignore) {}
+    com.example.Bookstore.domain.book.SaleStatus stEnum = null;
+    if (saleStatus != null && !saleStatus.isBlank()) {
+      try { stEnum = com.example.Bookstore.domain.book.SaleStatus.valueOf(saleStatus); } catch (Exception ignore) {}
+    }
+    Long minStock = null, maxStock = null;
+    try { if (stockMin != null && !stockMin.isBlank()) minStock = Long.valueOf(stockMin); } catch (Exception ignore) {}
+    try { if (stockMax != null && !stockMax.isBlank()) maxStock = Long.valueOf(stockMax); } catch (Exception ignore) {}
+
+    var spec = org.springframework.data.jpa.domain.Specification.where(BookSpecifications.titleOrPublisherContains(q))
+        .or(BookSpecifications.authorNameContains(q))
+        .and(BookSpecifications.saleStatusEquals(stEnum))
+        .and(BookSpecifications.createdBetween(
+            fromDate != null ? fromDate.atStartOfDay() : null,
+            toDate != null ? toDate.plusDays(1).atStartOfDay() : null
+        ))
+        .and(BookSpecifications.stockBetween(minStock, maxStock));
+
+    page = bookRepository.findAll(spec, pageable);
+
+    var bookIds = page.getContent().stream().map(Book::getId).toList();
+    stockMap = inventoryRepository.findByBook_IdIn(bookIds).stream()
         .filter(inv -> inv.getBook() != null && inv.getBook().getId() != null)
         .collect(Collectors.toMap(inv -> inv.getBook().getId(), inv -> inv.getQuantity() == null ? 0L : inv.getQuantity(), (a,b) -> a));
-
-      List<Book> filtered = new ArrayList<>();
-      java.time.LocalDate fromDate = null, toDate = null;
-      try { if (from != null && !from.isBlank()) fromDate = java.time.LocalDate.parse(from); } catch (Exception ignore) {}
-      try { if (to != null && !to.isBlank()) toDate = java.time.LocalDate.parse(to); } catch (Exception ignore) {}
-      com.example.Bookstore.domain.book.SaleStatus stEnum = null;
-      if (saleStatus != null && !saleStatus.isBlank()) {
-        try { stEnum = com.example.Bookstore.domain.book.SaleStatus.valueOf(saleStatus); } catch (Exception ignore) {}
-      }
-      Long minStock = null, maxStock = null;
-      try { if (stockMin != null && !stockMin.isBlank()) minStock = Long.valueOf(stockMin); } catch (Exception ignore) {}
-      try { if (stockMax != null && !stockMax.isBlank()) maxStock = Long.valueOf(stockMax); } catch (Exception ignore) {}
-
-      String needle = (q != null) ? q.toLowerCase() : null;
-      for (Book b : allSorted) {
-        boolean ok = true;
-        if (needle != null && !needle.isBlank()) {
-          boolean match = (b.getTitle() != null && b.getTitle().toLowerCase().contains(needle))
-              || (b.getPublisher() != null && b.getPublisher().toLowerCase().contains(needle));
-          if (!match && b.getBookAuthors() != null) {
-            for (var ba : b.getBookAuthors()) {
-              if (ba.getAuthor() != null && ba.getAuthor().getName() != null
-                  && ba.getAuthor().getName().toLowerCase().contains(needle)) {
-                match = true; break;
-              }
-            }
-          }
-          ok &= match;
-        }
-        if (ok && stEnum != null) {
-          var current = (b.getSaleStatus() == null ? com.example.Bookstore.domain.book.SaleStatus.ON_SALE : b.getSaleStatus());
-          ok &= (current == stEnum);
-        }
-        if (ok && fromDate != null) ok &= (b.getCreatedAt() != null && !b.getCreatedAt().isBefore(fromDate.atStartOfDay()));
-        if (ok && toDate != null) ok &= (b.getCreatedAt() != null && b.getCreatedAt().isBefore(toDate.plusDays(1).atStartOfDay()));
-        if (ok && (minStock != null || maxStock != null)) {
-          long qty = stockMap.getOrDefault(b.getId(), 0L);
-          if (minStock != null && qty < minStock) ok = false;
-          if (maxStock != null && qty > maxStock) ok = false;
-        }
-        if (ok) filtered.add(b);
-      }
-      int start = (int) pageable.getOffset();
-      int end = Math.min(start + pageable.getPageSize(), filtered.size());
-      List<Book> pageContent = start > filtered.size() ? List.of() : filtered.subList(start, end);
-      page = new org.springframework.data.domain.PageImpl<>(pageContent, pageable, filtered.size());
-    } catch (Exception ex) {
-      // 폴백: DB 페이징 결과 그대로 사용(필터 무시)
-      page = bookRepository.findAll(pageable);
-      stockMap = inventoryRepository.findAll().stream()
-          .filter(inv -> inv.getBook() != null && inv.getBook().getId() != null)
-          .collect(Collectors.toMap(inv -> inv.getBook().getId(), inv -> inv.getQuantity() == null ? 0L : inv.getQuantity(), (a,b) -> a));
-    }
 
     List<ProductListItem> items = new ArrayList<>();
     for (Book b : page.getContent()) {

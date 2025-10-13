@@ -5,6 +5,7 @@ import com.example.Bookstore.domain.order.OrderStatus;
 import com.example.Bookstore.domain.payment.Payment;
 import com.example.Bookstore.repository.order.OrderRepository;
 import com.example.Bookstore.repository.payment.PaymentRepository;
+import com.example.Bookstore.repository.order.OrderSpecifications;
 import com.example.Bookstore.service.order.OrderService;
 import jakarta.persistence.EntityNotFoundException;
 import java.math.BigDecimal;
@@ -53,43 +54,29 @@ public class AdminOrderController {
       @PageableDefault(size = 30) Pageable pageable,
       Model model) {
     Page<Order> page;
-    try {
-      // 정렬만 DB에 위임하고, 필터는 메모리 처리 (for-loop)
-      List<Order> allSorted = orderRepository.findAll(pageable.getSort());
-      List<Order> filtered = new ArrayList<>();
-      LocalDate fromDate = null, toDate = null;
-      try { if (from != null && !from.isBlank()) fromDate = LocalDate.parse(from); } catch (Exception ignore) {}
-      try { if (to != null && !to.isBlank()) toDate = LocalDate.parse(to); } catch (Exception ignore) {}
+    LocalDate fromDate = null, toDate = null;
+    try { if (from != null && !from.isBlank()) fromDate = LocalDate.parse(from); } catch (Exception ignore) {}
+    try { if (to != null && !to.isBlank()) toDate = LocalDate.parse(to); } catch (Exception ignore) {}
 
-      OrderStatus statusEnum = null;
-      if (status != null && !status.isBlank()) {
-        try { statusEnum = OrderStatus.valueOf(status); } catch (Exception ignore) {}
-      }
-      Long userIdVal = null;
-      try { if (userId != null && !userId.isBlank()) userIdVal = Long.valueOf(userId); } catch (Exception ignore) {}
-      BigDecimal minAmt = null, maxAmt = null;
-      try { if (minTotal != null && !minTotal.isBlank()) minAmt = new BigDecimal(minTotal); } catch (Exception ignore) {}
-      try { if (maxTotal != null && !maxTotal.isBlank()) maxAmt = new BigDecimal(maxTotal); } catch (Exception ignore) {}
-
-      for (Order o : allSorted) {
-        boolean ok = true;
-        if (statusEnum != null) ok &= (o.getStatus() == statusEnum);
-        if (ok && userIdVal != null) ok &= (o.getUser() != null && userIdVal.equals(o.getUser().getId()));
-        if (ok && fromDate != null) ok &= (o.getCreatedAt() != null && !o.getCreatedAt().isBefore(fromDate.atStartOfDay()));
-        if (ok && toDate != null) ok &= (o.getCreatedAt() != null && o.getCreatedAt().isBefore(toDate.plusDays(1).atStartOfDay()));
-        if (ok && minAmt != null) ok &= (o.getTotalAmount() != null && o.getTotalAmount().compareTo(minAmt) >= 0);
-        if (ok && maxAmt != null) ok &= (o.getTotalAmount() != null && o.getTotalAmount().compareTo(maxAmt) <= 0);
-        if (ok) filtered.add(o);
-      }
-
-      int start = (int) pageable.getOffset();
-      int end = Math.min(start + pageable.getPageSize(), filtered.size());
-      List<Order> pageContent = start > filtered.size() ? List.of() : filtered.subList(start, end);
-      page = new PageImpl<>(pageContent, pageable, filtered.size());
-    } catch (Exception ex) {
-      // 폴백: DB 페이징 결과 그대로 사용(필터 무시)
-      page = orderRepository.findAll(pageable);
+    OrderStatus statusEnum = null;
+    if (status != null && !status.isBlank()) {
+      try { statusEnum = OrderStatus.valueOf(status); } catch (Exception ignore) {}
     }
+    Long userIdVal = null;
+    try { if (userId != null && !userId.isBlank()) userIdVal = Long.valueOf(userId); } catch (Exception ignore) {}
+    BigDecimal minAmt = null, maxAmt = null;
+    try { if (minTotal != null && !minTotal.isBlank()) minAmt = new BigDecimal(minTotal); } catch (Exception ignore) {}
+    try { if (maxTotal != null && !maxTotal.isBlank()) maxAmt = new BigDecimal(maxTotal); } catch (Exception ignore) {}
+
+    var spec = org.springframework.data.jpa.domain.Specification.where(OrderSpecifications.statusEquals(statusEnum))
+        .and(OrderSpecifications.userIdEquals(userIdVal))
+        .and(OrderSpecifications.createdBetween(
+            fromDate != null ? fromDate.atStartOfDay() : null,
+            toDate != null ? toDate.plusDays(1).atStartOfDay() : null
+        ))
+        .and(OrderSpecifications.totalBetween(minAmt, maxAmt));
+
+    page = orderRepository.findAll(spec, pageable);
     List<OrderListItem> items = page.stream().map(this::toListItem).toList();
     model.addAttribute("items", items);
     model.addAttribute("page", page.getNumber());
