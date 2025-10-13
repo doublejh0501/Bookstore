@@ -89,6 +89,7 @@ public class KakaoPayController {
     }
   }
 
+
   @GetMapping("/payments/kakao/approve")
   public ResponseEntity<ApproveResponse> approve(
       @RequestParam("pg_token") String pgToken,

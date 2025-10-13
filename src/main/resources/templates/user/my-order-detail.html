@@ -1,36 +1,89 @@
 <!DOCTYPE html>
 <html lang="ko" xmlns:th="http://www.thymeleaf.org"
       th:replace="_fragments/layout :: layout(~{::section}, '주문 상세')">
-<section th:fragment="content" th:object="${order}">
-  <h1>주문 상세 <small th:text="*{id}"></small></h1>
+<section th:fragment="content" th:object="${order}" class="order-detail-page">
+  <style>
+    :root { --primary:#0046ff; --primary-dark:#1737c2; --text:#1f2d3d; --muted:#64748b; --bg:#f6f8fb; --card:#fff; --border:#e5e8eb; }
+    .order-detail-page { background: var(--bg); min-height: 100vh; padding: 32px 0 48px; }
+    .container { max-width: 1100px; margin: 0 auto; padding: 0 24px; display: grid; grid-template-columns: 1fr 360px; gap: 24px; }
+    @media (max-width: 992px) { .container { grid-template-columns: 1fr; } }
+    h1 { margin: 0 0 12px; font-size: 28px; font-weight: 800; color: var(--text); }
+    .panel { background: var(--card); border:1px solid var(--border); border-radius:16px; box-shadow:0 12px 32px rgba(15,30,65,.08); padding: 18px; }
+    .panel h2 { margin: 0 0 10px; font-size: 18px; font-weight: 800; color: var(--text); }
+    .summary { display:grid; grid-template-columns: 120px 1fr; row-gap:10px; column-gap:12px; }
+    .summary dt { color: var(--muted); }
+    .item { display:grid; grid-template-columns: 96px 1fr auto; gap:16px; padding: 16px 0; border-bottom:1px solid rgba(229,232,235,.7); align-items:center; }
+    .item:last-child { border-bottom:none; }
+    .thumb { width:96px; height:128px; border-radius:12px; background:#f1f5f9; display:flex; align-items:center; justify-content:center; overflow:hidden; }
+    .thumb img { width:100%; height:100%; object-fit:cover; }
+    .title { margin:0 0 6px; font-size:16px; font-weight:700; color:var(--text); }
+    .meta { font-size:13px; color:var(--muted); display:flex; gap:10px; }
+    .price { font-size:16px; font-weight:800; color:var(--text); }
+    .stack { display:flex; flex-direction:column; gap:12px; }
+    .btn { height:44px; padding:0 16px; border-radius:12px; border:1px solid var(--border); background:#fff; font-weight:700; cursor:pointer; }
+    .btn-primary { background:var(--primary); color:#fff; border-color:var(--primary); }
+    .btn-primary:hover { background: var(--primary-dark); }
+  </style>
 
-  <h2>배송지</h2>
-  <div th:text="${shipment?.address}">-</div>
+  <div class="container">
+    <div>
+      <h1>주문 상세 <small th:text="|#*{id}|"></small></h1>
 
-  <h2>결제정보</h2>
-  <dl>
-    <dt>수단</dt><dd th:text="${payment?.method}">-</dd>
-    <dt>상태</dt><dd th:text="${payment?.status}">-</dd>
-    <dt>금액</dt><dd th:text="${#numbers.formatInteger(payment?.amount, 3, 'COMMA')}">0</dd>
-  </dl>
+      <article class="panel">
+        <h2>주문상품</h2>
+        <div class="item" th:each="i : ${orderItems}">
+          <div class="thumb">
+            <a th:if="${i.bookId != null}" th:href="@{|/books/${i.bookId}|}">
+              <img th:if="${i.imageUrl}" th:src="${i.imageUrl}" th:alt="${i.title}">
+              <div th:if="${i.imageUrl == null}">이미지</div>
+            </a>
+            <div th:if="${i.bookId == null}">
+              <img th:if="${i.imageUrl}" th:src="${i.imageUrl}" th:alt="${i.title}">
+              <div th:if="${i.imageUrl == null}">이미지</div>
+            </div>
+          </div>
+          <div>
+            <h3 class="title">
+              <a th:if="${i.bookId != null}" th:href="@{|/books/${i.bookId}|}" th:text="${i.title}">도서</a>
+              <span th:if="${i.bookId == null}" th:text="${i.title}">도서</span>
+            </h3>
+            <div class="meta">
+              <span th:text="|수량 ${i.quantity}권|">수량</span>
+              <span th:text="|개당 ${#numbers.formatDecimal(i.unitPrice, 1, 'COMMA', 0, 'POINT')}원|">단가</span>
+            </div>
+          </div>
+          <div class="price" th:text="|${#numbers.formatDecimal(i.lineTotal, 1, 'COMMA', 0, 'POINT')}원|">0원</div>
+        </div>
+      </article>
+    </div>
 
-  <h2>주문상품</h2>
-  <ul>
-    <li th:each="i : ${orderItems}">
-      <a th:href="@{|/products/${i.productId}|}" th:text="${i.productName}">상품</a>
-      x <span th:text="${i.quantity}">1</span>
-    </li>
-  </ul>
+    <aside class="stack">
+      <article class="panel">
+        <h2>주문 요약</h2>
+        <dl class="summary">
+          <dt>주문번호</dt><dd th:text="*{id}">-</dd>
+          <dt>상태</dt><dd th:text="${orderStatus != null ? orderStatus.label : '확인 불가'}">-</dd>
+          <dt>결제수단</dt><dd th:text="${payment?.method}">-</dd>
+          <dt>결제상태</dt><dd th:text="${payment?.status}">-</dd>
+          <dt>결제금액</dt><dd th:text="${payment != null ? #numbers.formatInteger(payment.amount, 3, 'COMMA') + '원' : '-'}">0원</dd>
+        </dl>
+      </article>
 
-  <div>
-    <form th:if="${order.cancelable}" th:action="@{|/mypage/orders/${order.id}/cancel|}" method="post">
-      <input type="hidden" th:if="${_csrf != null}" th:name="${_csrf.parameterName}" th:value="${_csrf.token}" />
-      <button type="submit">주문취소</button>
-    </form>
-  </div>
+      <article class="panel">
+        <h2>배송지</h2>
+        <div th:text="${shipment?.address}">-</div>
+      </article>
 
-  <div style="margin-top:12px;">
-    <a th:href="@{/mypage/orders}">목록</a>
+      <article class="panel">
+        <h2>행동</h2>
+        <form th:if="${order.cancelable}" th:action="@{|/mypage/orders/${order.id}/cancel|}" method="post">
+          <input type="hidden" th:if="${_csrf != null}" th:name="${_csrf.parameterName}" th:value="${_csrf.token}" />
+          <button class="btn btn-primary" type="submit">주문 취소</button>
+        </form>
+        <a class="btn" th:href="@{/mypage/orders}" style="margin-top:10px; display:inline-flex; align-items:center; justify-content:center;">목록</a>
+      </article>
+    </aside>
   </div>
 </section>
 </html>
+

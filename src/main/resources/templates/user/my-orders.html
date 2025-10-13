@@ -316,6 +316,9 @@
   </style>
 
   <div class="my-orders-container">
+    <div th:if="${notice}" class="orders-empty" style="border-style: solid; border-color: rgba(0,70,255,.2);">
+      <span th:text="${notice}">알림</span>
+    </div>
     <div class="my-orders-header">
       <h1>나의 주문</h1>
       <p>최근에 구매하신 순서대로 주문 내역을 확인하세요.</p>
@@ -332,8 +335,8 @@
             <div class="order-number" th:text="|주문번호 #${order.id}|">주문번호 #1</div>
           </div>
           <div class="order-header-actions">
-<!--            <span class="order-status-text"-->
-<!--                  th:text="${order.statusLabel()}">결제 완료</span>-->
+            <span class="order-status-text"
+                  th:text="${order.statusLabel()}">상태</span>
             <div class="order-summary-count"
                  th:text="|총 상품 수 ${order.totalQuantity}권|">
               총 상품 수 0권
@@ -342,7 +345,12 @@
                  th:text="|총 결제 금액 ${#numbers.formatDecimal(order.totalAmount, 1, 'COMMA', 0, 'POINT')}원|">
               총 결제 금액 0원
             </div>
-<!--            <a class="order-link" th:href="@{|/mypage/orders/${order.id}|}">상세 보기</a>-->
+            <a class="order-link" th:href="@{|/mypage/orders/${order.id}|}">상세 보기</a>
+            <form th:if="${order.status.toString() == 'PENDING' or order.status.toString() == 'PAID'}"
+                  th:action="@{|/mypage/orders/${order.id}/cancel|}" method="post">
+              <input type="hidden" th:if="${_csrf != null}" th:name="${_csrf.parameterName}" th:value="${_csrf.token}" />
+              <button class="order-review-button" type="submit">주문 취소</button>
+            </form>
           </div>
         </header>
 
